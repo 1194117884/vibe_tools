@@ -16,7 +16,7 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./*"],
-      "@vibe-tools/ui": ["../../packages/ui/index.ts"],
+      "@vibe-tools/ui": ["../../packages/ui/index.tsx"],
       "@vibe-tools/utils": ["../../packages/utils/index.ts"]
     }
   },

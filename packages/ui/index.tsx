@@ -54,16 +54,17 @@ interface ButtonProps {
   variant?: 'primary' | 'secondary'
   className?: string
   type?: 'button' | 'submit'
+  disabled?: boolean
 }
 
-export function Button({ onClick, children, variant = 'primary', className = '', type = 'button' }: ButtonProps) {
+export function Button({ onClick, children, variant = 'primary', className = '', type = 'button', disabled = false }: ButtonProps) {
   const base = 'px-4 py-2 rounded-lg font-medium transition-all duration-200'
   const variants = {
     primary: 'bg-primary text-white hover:bg-primaryHover',
     secondary: 'bg-surface border border-border text-text hover:bg-surfaceHover'
   }
   return (
-    <button type={type} onClick={onClick} className={`${base} ${variants[variant]} ${className}`}>
+    <button type={type} onClick={onClick} disabled={disabled} className={`${base} ${variants[variant]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
       {children}
     </button>
   )
