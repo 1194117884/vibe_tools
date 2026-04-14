@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+package-lock.json
+.env
+.DS_Store
+.idea/
+.vscode/
+*.log
+.next/
+.turbo/
