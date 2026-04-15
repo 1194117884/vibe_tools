@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 6% 99%;
+    --surface: 220 5% 97%;
+    --surfaceHover: 220 3% 92%;
+    --text: 220 10% 8%;
+    --textMuted: 220 8% 40%;
+    --textDim: 220 6% 60%;
+    --primary: 210 100% 50%;
+    --border: 220 5% 90%;
+    --borderLight: 220 4% 95%;
+  }
+
+  .dark {
+    --background: 220 8% 6%;
+    --surface: 220 6% 10%;
+    --surfaceHover: 220 5% 15%;
+    --text: 220 10% 95%;
+    --textMuted: 220 8% 60%;
+    --textDim: 220 6% 45%;
+    --primary: 210 100% 60%;
+    --border: 220 5% 15%;
+    --borderLight: 220 4% 12%;
+  }
+}
+
+@layer components {
+  .bg-background {
+    @apply bg-white dark:bg-gray-900;
+  }
+
+  .bg-surface {
+    @apply bg-gray-50 dark:bg-gray-800;
+  }
+
+  .bg-surfaceHover {
+    @apply bg-gray-100 dark:bg-gray-700;
+  }
+
+  .text-text {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+
+  .text-textMuted {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+
+  .text-textDim {
+    @apply text-gray-500 dark:text-gray-500;
+  }
+
+  .text-primary {
+    @apply text-blue-500 dark:text-blue-400;
+  }
+
+  .border-border {
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  .border-borderLight {
+    @apply border-gray-100 dark:border-gray-800;
+  }
+}
