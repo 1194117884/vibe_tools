@@ -4,64 +4,98 @@
 
 @layer base {
   :root {
-    --background: 220 6% 99%;
-    --surface: 220 5% 97%;
-    --surfaceHover: 220 3% 92%;
-    --text: 220 10% 8%;
-    --textMuted: 220 8% 40%;
-    --textDim: 220 6% 60%;
-    --primary: 210 100% 50%;
-    --border: 220 5% 90%;
-    --borderLight: 220 4% 95%;
+    /* Light theme colors */
+    --background: 255 100% 100%; /* white */
+    --surface: 220 15% 97%; /* light gray */
+    --surfaceHover: 220 10% 92%; /* slightly darker gray */
+    --text: 220  10% 8%; /* dark gray */
+    --textMuted: 220 8% 40%; /* muted gray */
+    --textDim: 220 6% 60%; /* dimmed gray */
+    --primary: 210 100% 50%; /* blue */
+    --primaryText: 0 0% 100%; /* white */
+    --secondary: 220 8% 45%; /* medium gray */
+    --secondaryText: 0 0% 100%; /* white */
+    --border: 220 10% 90%; /* light gray */
+    --borderLight: 220 10% 95%; /* very light gray */
+    --input: 0 0% 100%; /* white */
   }
 
   .dark {
-    --background: 220 8% 6%;
-    --surface: 220 6% 10%;
-    --surfaceHover: 220 5% 15%;
-    --text: 220 10% 95%;
-    --textMuted: 220 8% 60%;
-    --textDim: 220 6% 45%;
-    --primary: 210 100% 60%;
-    --border: 220 5% 15%;
-    --borderLight: 220 4% 12%;
+    /* Dark theme colors */
+    --background: 220 8% 6%; /* dark background */
+    --surface: 220 6% 10%; /* dark surface */
+    --surfaceHover: 220 5% 15%; /* slightly lighter dark */
+    --text: 220 10% 95%; /* light text */
+    --textMuted: 220 8% 60%; /* muted light */
+    --textDim: 220 6% 45%; /* dimmed light */
+    --primary: 210 100% 60%; /* brighter blue */
+    --primaryText: 0 0% 100%; /* white */
+    --secondary: 220 8% 25%; /* medium dark gray */
+    --secondaryText: 0 0% 100%; /* white */
+    --border: 220 5% 15%; /* dark border */
+    --borderLight: 220 4% 12%; /* darker border */
+    --input: 220 6% 12%; /* dark input */
   }
 }
 
 @layer components {
   .bg-background {
-    @apply bg-white dark:bg-gray-900;
+    @apply bg-[hsl(var(--background))];
   }
 
   .bg-surface {
-    @apply bg-gray-50 dark:bg-gray-800;
+    @apply bg-[hsl(var(--surface))];
   }
 
   .bg-surfaceHover {
-    @apply bg-gray-100 dark:bg-gray-700;
+    @apply bg-[hsl(var(--surfaceHover))];
   }
 
   .text-text {
-    @apply text-gray-900 dark:text-gray-100;
+    @apply text-[hsl(var(--text))];
   }
 
   .text-textMuted {
-    @apply text-gray-600 dark:text-gray-400;
+    @apply text-[hsl(var(--textMuted))];
   }
 
   .text-textDim {
-    @apply text-gray-500 dark:text-gray-500;
+    @apply text-[hsl(var(--textDim))];
   }
 
-  .text-primary {
-    @apply text-blue-500 dark:text-blue-400;
+  .text-primaryText {
+    @apply text-[hsl(var(--primaryText))];
+  }
+
+  .text-secondaryText {
+    @apply text-[hsl(var(--secondaryText))];
+  }
+
+  .bg-primary {
+    @apply bg-[hsl(var(--primary))];
+  }
+
+  .bg-secondary {
+    @apply bg-[hsl(var(--secondary))];
   }
 
   .border-border {
-    @apply border-gray-200 dark:border-gray-700;
+    @apply border-[hsl(var(--border))];
   }
 
   .border-borderLight {
-    @apply border-gray-100 dark:border-gray-800;
+    @apply border-[hsl(var(--borderLight))];
+  }
+
+  .bg-input {
+    @apply bg-[hsl(var(--input))];
+  }
+
+  .hover\:bg-primaryHover:hover {
+    @apply hover:bg-[hsl(calc(var(--primary)/360*360+0)calc(var(--primary)*1.2)calc(var(--primary)*0.9))];
+  }
+
+  .hover\:bg-secondaryHover:hover {
+    @apply hover:bg-[hsl(calc(var(--secondary)/360*360+0)calc(var(--secondary)*1.2)calc(var(--secondary)*0.9))];
   }
 }

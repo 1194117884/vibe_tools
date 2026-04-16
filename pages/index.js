@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import ThemeToggle from '../components/ThemeToggle';
 
 const tools = [
   { id: 'json', name: 'JSON Formatter', desc: 'Format, validate & minify JSON', icon: '{ }' },
@@ -12,6 +13,7 @@ const tools = [
   { id: 'jwt', name: 'JWT Decoder', desc: 'Parse JWT tokens', icon: '🎫' },
   { id: 'cron', name: 'Cron Generator', desc: 'Build cron expressions', icon: '⏰' },
   { id: 'color', name: 'Color Converter', desc: 'HEX/RGB/HSL', icon: '🎨' },
+  { id: 'multibase', name: 'Multi-Base Converter', desc: 'Convert between hex, dec, bin & ASCII', icon: '🔢' },
   { id: 'md-pdf', name: 'Markdown → PDF', desc: 'Convert MD to PDF', icon: '📄' },
   { id: 'timestamp', name: 'Timestamp', desc: 'Unix timestamp converter', icon: '🕐' },
 ];
@@ -26,9 +28,12 @@ export default function Home() {
 
       {/* Header */}
       <header className="border-b border-border py-6">
-        <div className="max-w-6xl mx-auto px-6">
-          <h1 className="text-3xl font-bold text-text">Vibe Tools</h1>
-          <p className="text-textMuted mt-1">Your personal toolkit</p>
+        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-text">Vibe Tools</h1>
+            <p className="text-textMuted mt-1">Your personal toolkit</p>
+          </div>
+          <ThemeToggle />
         </div>
       </header>
 

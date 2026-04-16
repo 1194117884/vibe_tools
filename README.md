@@ -14,6 +14,8 @@ Personal toolkit with common utility tools.
 - JWT Decoder
 - Cron Generator
 - Color Converter (HEX/RGB/HSL)
+- Binary ↔ ASCII Converter
+- Multi-Base Converter (Hex, Decimal, Binary, ASCII)
 - Timestamp Converter
 - Markdown → PDF
 
