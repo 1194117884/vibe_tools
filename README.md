@@ -10,7 +10,7 @@ Personal toolkit with common utility tools.
 - Hash Generator (SHA-256, SHA-1)
 - AES Encryption
 - RSA Key Pair Generator
-- Image Converter (PNG/JPG/WebP)
+- Image Converter (HEIC/PNG/JPG/WebP)
 - JWT Decoder
 - Cron Generator
 - Color Converter (HEX/RGB/HSL)

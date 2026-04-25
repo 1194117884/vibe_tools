@@ -9,7 +9,7 @@ const tools = [
   { id: 'hash', name: 'Hash Generator', desc: 'MD5, SHA-1, SHA-256', icon: '#' },
   { id: 'aes', name: 'AES Encrypt', desc: 'Symmetric encryption', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', desc: 'Generate RSA key pairs', icon: '🔑' },
-  { id: 'image', name: 'Image Convert', desc: 'PNG/JPG/WebP conversion', icon: '🖼' },
+  { id: 'image', name: 'Image Convert', desc: 'HEIC/PNG/JPG/WebP conversion', icon: '🖼' },
   { id: 'jwt', name: 'JWT Decoder', desc: 'Parse JWT tokens', icon: '🎫' },
   { id: 'cron', name: 'Cron Generator', desc: 'Build cron expressions', icon: '⏰' },
   { id: 'color', name: 'Color Converter', desc: 'HEX/RGB/HSL', icon: '🎨' },

@@ -8,48 +8,96 @@ export default function ImageTool() {
   const [selectedFormat, setSelectedFormat] = useState('jpeg');
   const [quality, setQuality] = useState(0.8);
   const [error, setError] = useState('');
+  const [heicPreviewUrl, setHeicPreviewUrl] = useState(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [converting, setConverting] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFileChange = (e) => {
+  const isHeicFile = (file) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
+  };
+
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && (file.type.startsWith('image/') || isHeicFile(file))) {
       setInputImage(file);
       setError('');
+      setOutputImage(null);
+
+      // For HEIC, immediately decode a preview since browsers can't render HEIC natively
+      if (isHeicFile(file)) {
+        setLoadingPreview(true);
+        try {
+          const heic2any = (await import('heic2any')).default;
+          const pngBlob = await heic2any({ blob: file, toType: 'image/png' });
+          const blob = pngBlob instanceof Blob ? pngBlob : pngBlob[0];
+          if (heicPreviewUrl) URL.revokeObjectURL(heicPreviewUrl);
+          setHeicPreviewUrl(URL.createObjectURL(blob));
+        } catch {
+          setHeicPreviewUrl(null);
+        } finally {
+          setLoadingPreview(false);
+        }
+      } else {
+        if (heicPreviewUrl) URL.revokeObjectURL(heicPreviewUrl);
+        setHeicPreviewUrl(null);
+      }
     } else {
       setError('Please select a valid image file');
     }
   };
 
-  const handleConvert = () => {
+const handleConvert = async () => {
     if (!inputImage) {
       setError('Please select an image first');
       return;
     }
 
+    setConverting(true);
+    setError('');
     try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
+      let imageDataUrl;
 
-          canvas.width = img.width;
-          canvas.height = img.height;
+      if (isHeicFile(inputImage)) {
+        const heic2any = (await import('heic2any')).default;
+        const pngBlob = await heic2any({
+          blob: inputImage,
+          toType: 'image/png',
+        });
+        imageDataUrl = URL.createObjectURL(pngBlob instanceof Blob ? pngBlob : pngBlob[0]);
+      } else {
+        imageDataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(inputImage);
+        });
+      }
 
-          ctx.fillStyle = '#FFFFFF'; // White background for JPEG/PNG
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
 
-          // Convert to selected format
-          const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
-          setOutputImage(dataURL);
-        };
-        img.src = e.target.result;
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+
+        const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
+        setOutputImage(dataURL);
+        setConverting(false);
       };
-      reader.readAsDataURL(inputImage);
+      img.onerror = () => {
+        setError('Failed to load image for conversion');
+        setConverting(false);
+      };
+      img.src = imageDataUrl;
     } catch (e) {
       setError('Conversion failed: ' + e.message);
+      setConverting(false);
     }
   };
 
@@ -76,7 +124,7 @@ export default function ImageTool() {
             <div className="text-2xl">🖼</div>
             <div>
               <h1 className="text-2xl font-bold text-text">Image Converter</h1>
-              <p className="text-textMuted">Convert between PNG, JPG, and WebP formats</p>
+              <p className="text-textMuted">Convert between HEIC, PNG, JPG, and WebP formats</p>
             </div>
           </div>
         </div>
@@ -89,7 +137,7 @@ export default function ImageTool() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept="image/*"
+              accept="image/*,.heic,.heif"
               className="hidden"
             />
             <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
@@ -98,7 +146,17 @@ export default function ImageTool() {
             {inputImage && (
               <div className="mt-4">
                 <p className="text-sm text-textMuted">{inputImage.name}</p>
-                <img src={URL.createObjectURL(inputImage)} alt="Selected" className="mt-2 max-h-40 mx-auto rounded" />
+                {loadingPreview ? (
+                  <div className="mt-2 flex items-center justify-center gap-2 text-textMuted">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span className="text-sm">Decoding HEIC preview...</span>
+                  </div>
+                ) : (
+                  <img src={heicPreviewUrl || URL.createObjectURL(inputImage)} alt="Selected" className="mt-2 max-h-40 mx-auto rounded" />
+                )}
               </div>
             )}
           </div>
@@ -130,8 +188,16 @@ export default function ImageTool() {
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Button onClick={handleConvert}>Convert Image</Button>
+          <div className="flex gap-2 flex-wrap items-center">
+            <Button onClick={handleConvert} disabled={converting}>
+              {converting ? 'Converting...' : 'Convert Image'}
+            </Button>
+            {converting && (
+              <svg className="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            )}
           </div>
 
           {error && (
