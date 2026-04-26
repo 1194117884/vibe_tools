@@ -14,7 +14,7 @@ const tools = [
   { id: 'cron', name: 'Cron Generator', desc: 'Build cron expressions', icon: '⏰' },
   { id: 'color', name: 'Color Converter', desc: 'HEX/RGB/HSL', icon: '🎨' },
   { id: 'multibase', name: 'Multi-Base Converter', desc: 'Convert between hex, dec, bin & ASCII', icon: '🔢' },
-  { id: 'md-pdf', name: 'Markdown → PDF', desc: 'Convert MD to PDF', icon: '📄' },
+  { id: 'md-pdf', name: 'Markdown to PDF', desc: 'Convert MD to PDF', icon: '📄' },
   { id: 'timestamp', name: 'Timestamp', desc: 'Unix timestamp converter', icon: '🕐' },
 ];
 
@@ -26,40 +26,59 @@ export default function Home() {
         <meta name="description" content="Your personal toolkit for everyday tasks" />
       </Head>
 
-      {/* Header */}
-      <header className="border-b border-border py-6">
-        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-text">Vibe Tools</h1>
-            <p className="text-textMuted mt-1">Your personal toolkit</p>
-          </div>
+      {/* Navigation Bar */}
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-6xl mx-auto px-6 h-12 flex items-center justify-between">
+          <Link href="/" className="text-body font-semibold text-text tracking-tight">
+            Vibe Tools
+          </Link>
           <ThemeToggle />
         </div>
-      </header>
+      </nav>
 
-      {/* Tools Grid */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {tools.map((tool) => (
-            <Link
-              key={tool.id}
-              href={`/tools/${tool.id}`}
-              className="group bg-surface border border-border rounded-xl p-5 hover:bg-surfaceHover hover:border-borderLight transition-all duration-200"
-            >
-              <div className="text-2xl mb-3">{tool.icon}</div>
-              <h3 className="font-semibold text-text group-hover:text-primary transition-colors">
-                {tool.name}
-              </h3>
-              <p className="text-sm text-textMuted mt-1">{tool.desc}</p>
-            </Link>
-          ))}
+      {/* Hero Section */}
+      <section className="bg-[#000000] text-[#f5f5f7]">
+        <div className="max-w-6xl mx-auto px-6 pt-20 pb-24 text-center">
+          <h1 className="font-display text-hero tracking-tight mb-4">
+            Vibe Tools
+          </h1>
+          <p className="text-[28px] leading-[1.14] font-semibold text-[#86868b] max-w-xl mx-auto">
+            Your personal toolkit for everyday tasks
+          </p>
+          <p className="mt-6 text-body text-[#6e6e73] max-w-md mx-auto">
+            Thirteen simple utilities to format JSON, encode data, generate hashes, convert images, and more — all running locally in your browser.
+          </p>
         </div>
-      </div>
+      </section>
+
+      {/* Tools Section */}
+      <section className="bg-[#f5f5f7] dark:bg-[#000000]">
+        <div className="max-w-6xl mx-auto px-6 py-20">
+          <h2 className="font-display text-product text-center text-text mb-10 tracking-tight">
+            Tools
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {tools.map((tool) => (
+              <Link
+                key={tool.id}
+                href={`/tools/${tool.id}`}
+                className="group bg-[var(--background)] border border-[var(--border)] rounded-lg p-5 hover:shadow-[0_2px_12px_rgba(0,0,0,0.08)] transition-shadow duration-200"
+              >
+                <div className="text-2xl mb-3">{tool.icon}</div>
+                <h3 className="font-semibold text-[17px] leading-[1.24] text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+                  {tool.name}
+                </h3>
+                <p className="text-control text-[var(--textMuted)] mt-1">{tool.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-6xl mx-auto px-6 text-center text-textDim text-sm">
-          Built with ❤️ using Next.js
+      <footer className="bg-[#f5f5f7] dark:bg-[#000000] border-t border-[var(--border)]">
+        <div className="max-w-6xl mx-auto px-6 py-6 text-center text-micro text-[var(--textDim)]">
+          Built with Next.js
         </div>
       </footer>
     </div>

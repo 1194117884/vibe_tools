@@ -1,4 +1,3 @@
-// components/ThemeToggle.js
 import { useTheme } from '../contexts/ThemeContext';
 import { useState } from 'react';
 import { SunIcon, MoonIcon, ComputerDesktopIcon } from '@heroicons/react/24/outline';
@@ -8,12 +7,12 @@ const ThemeToggle = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const themeOptions = [
-    { id: 'light', name: 'Light', icon: <SunIcon className="h-5 w-5" /> },
-    { id: 'dark', name: 'Dark', icon: <MoonIcon className="h-5 w-5" /> },
-    { id: 'system', name: 'System', icon: <ComputerDesktopIcon className="h-5 w-5" /> },
+    { id: 'light', name: 'Light', icon: <SunIcon className="h-4 w-4" /> },
+    { id: 'dark', name: 'Dark', icon: <MoonIcon className="h-4 w-4" /> },
+    { id: 'system', name: 'System', icon: <ComputerDesktopIcon className="h-4 w-4" /> },
   ];
 
-  const currentThemeOption = themeOptions.find(option => option.id === theme);
+  const currentThemeOption = themeOptions.find((option) => option.id === theme);
 
   const selectTheme = (selectedTheme) => {
     setTheme(selectedTheme);
@@ -24,7 +23,7 @@ const ThemeToggle = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-lg bg-surface border border-border hover:bg-surfaceHover transition-colors flex items-center"
+        className="h-9 w-9 flex items-center justify-center rounded bg-surface border border-border hover:bg-surfaceHover transition-colors duration-150 text-textDim hover:text-text active:scale-[0.97]"
         aria-label="Toggle theme"
         title={`Current theme: ${theme}`}
       >
@@ -32,35 +31,29 @@ const ThemeToggle = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-surface border border-border ring-1 ring-black ring-opacity-5 z-50">
-          <div className="py-1">
-            {themeOptions.map((option) => (
-              <button
-                key={option.id}
-                onClick={() => selectTheme(option.id)}
-                className={`w-full text-left px-4 py-2 text-sm flex items-center space-x-2 ${
-                  theme === option.id
-                    ? 'bg-primary text-primaryText'
-                    : 'text-text hover:bg-surfaceHover'
-                }`}
-              >
-                <span>{option.icon}</span>
-                <span>{option.name}</span>
-                {theme === option.id && (
-                  <span className="ml-auto">✓</span>
-                )}
-              </button>
-            ))}
-          </div>
+        <div className="absolute right-0 mt-2 w-36 rounded-lg bg-surface border border-border shadow-[0_4px_16px_rgba(0,0,0,0.12)] z-50 py-1">
+          {themeOptions.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => selectTheme(option.id)}
+              className={`w-full text-left px-3 py-2 text-control flex items-center gap-2 rounded-md mx-1 transition-colors duration-100 ${
+                theme === option.id
+                  ? 'bg-primary text-primaryText'
+                  : 'text-text hover:bg-surfaceHover'
+              }`}
+            >
+              <span className="flex-shrink-0">{option.icon}</span>
+              <span>{option.name}</span>
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Close dropdown when clicking outside */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
-        ></div>
+        />
       )}
     </div>
   );

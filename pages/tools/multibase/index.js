@@ -1,17 +1,11 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { Button } from '../../../components/ui/button';
 import {
-  hexToDecimal,
-  decimalToHex,
-  decimalToBinary,
-  decimalToAscii,
-  binaryToDecimal,
-  asciiToBinaryLong,
-  binaryToAsciiLong,
-  asciiToDecimalLong,
-  decimalArrayToAscii,
-  asciiToHexLong,
+  hexToDecimal, decimalToHex, decimalToBinary, decimalToAscii,
+  binaryToDecimal, asciiToBinaryLong, binaryToAsciiLong,
+  asciiToDecimalLong, decimalArrayToAscii, asciiToHexLong,
   hexToAsciiLong
 } from '../../../utils';
 
@@ -20,18 +14,14 @@ export default function MultiBaseConverter() {
   const [decimalValue, setDecimalValue] = useState('');
   const [binaryValue, setBinaryValue] = useState('');
   const [asciiValue, setAsciiValue] = useState('');
-  const [hexLongValue, setHexLongValue] = useState(''); // For multi-byte hex (e.g., "41 42")
-
+  const [hexLongValue, setHexLongValue] = useState('');
   const [hexError, setHexError] = useState('');
   const [decimalError, setDecimalError] = useState('');
   const [binaryError, setBinaryError] = useState('');
   const [asciiError, setAsciiError] = useState('');
   const [hexLongError, setHexLongError] = useState('');
-
-  // Track which field initiated the update to prevent cycles
   const [lastUpdatedField, setLastUpdatedField] = useState(null);
 
-  // Debounced update to avoid cycles
   useEffect(() => {
     if (lastUpdatedField === 'hex' && hexValue) {
       try {
@@ -46,20 +36,11 @@ export default function MultiBaseConverter() {
           setHexLongValue('');
           setAsciiError('Hex value out of single ASCII range (0x00-0x7F)');
         }
-
-        const binary = decimalToBinary(decimal);
-        setBinaryValue(binary);
-
+        setBinaryValue(decimalToBinary(decimal));
         setDecimalValue(decimal.toString());
-        setDecimalError('');
-        setBinaryError('');
-        setHexError('');
-        setHexLongError('');
+        setDecimalError(''); setBinaryError(''); setHexError(''); setHexLongError('');
       } catch (error) {
-        setAsciiValue('');
-        setBinaryValue('');
-        setDecimalValue('');
-        setHexLongValue('');
+        setAsciiValue(''); setBinaryValue(''); setDecimalValue(''); setHexLongValue('');
         setHexError(error.message);
       }
     }
@@ -69,16 +50,9 @@ export default function MultiBaseConverter() {
     if (lastUpdatedField === 'decimal' && decimalValue) {
       try {
         const decimalNum = parseInt(decimalValue);
-        if (isNaN(decimalNum) || decimalNum < 0) {
-          throw new Error('Invalid decimal number');
-        }
-
-        const hex = decimalToHex(decimalNum);
-        setHexValue(hex);
-
-        const binary = decimalToBinary(decimalNum);
-        setBinaryValue(binary);
-
+        if (isNaN(decimalNum) || decimalNum < 0) throw new Error('Invalid decimal number');
+        setHexValue(decimalToHex(decimalNum));
+        setBinaryValue(decimalToBinary(decimalNum));
         if (decimalNum >= 0 && decimalNum <= 127) {
           const ascii = decimalToAscii(decimalNum);
           setAsciiValue(ascii);
@@ -89,16 +63,9 @@ export default function MultiBaseConverter() {
           setHexLongValue('');
           setAsciiError('Decimal value out of single ASCII range (0-127)');
         }
-
-        setDecimalError('');
-        setBinaryError('');
-        setHexError('');
-        setHexLongError('');
+        setDecimalError(''); setBinaryError(''); setHexError(''); setHexLongError('');
       } catch (error) {
-        setHexValue('');
-        setBinaryValue('');
-        setAsciiValue('');
-        setHexLongValue('');
+        setHexValue(''); setBinaryValue(''); setAsciiValue(''); setHexLongValue('');
         setDecimalError(error.message);
       }
     }
@@ -109,21 +76,13 @@ export default function MultiBaseConverter() {
       try {
         const decimal = binaryToDecimal(binaryValue);
         setDecimalValue(decimal.toString());
-
-        const hex = decimalToHex(decimal);
-        setHexValue(hex);
-
+        setHexValue(decimalToHex(decimal));
         if (binaryValue.trim().replace(/\s/g, '').length % 8 === 0) {
-          // It's a full byte sequence, convert to ASCII string
           const ascii = binaryToAsciiLong(binaryValue);
           setAsciiValue(ascii);
           setAsciiError('');
-
-          // Also update hex long
-          const hexLong = asciiToHexLong(ascii);
-          setHexLongValue(hexLong);
+          setHexLongValue(asciiToHexLong(ascii));
         } else if (decimal >= 0 && decimal <= 127) {
-          // It's a single character
           const ascii = decimalToAscii(decimal);
           setAsciiValue(ascii);
           setAsciiError('');
@@ -133,16 +92,9 @@ export default function MultiBaseConverter() {
           setHexLongValue('');
           setAsciiError('Binary does not correspond to valid ASCII');
         }
-
-        setDecimalError('');
-        setHexError('');
-        setBinaryError('');
-        setHexLongError('');
+        setDecimalError(''); setHexError(''); setBinaryError(''); setHexLongError('');
       } catch (error) {
-        setHexValue('');
-        setDecimalValue('');
-        setAsciiValue('');
-        setHexLongValue('');
+        setHexValue(''); setDecimalValue(''); setAsciiValue(''); setHexLongValue('');
         setBinaryError(error.message);
       }
     }
@@ -152,51 +104,26 @@ export default function MultiBaseConverter() {
     if (lastUpdatedField === 'ascii' && asciiValue) {
       try {
         if (asciiValue.length === 1) {
-          // Single character
           const decimalArray = asciiToDecimalLong(asciiValue);
           if (decimalArray.length > 0) {
-            const decimal = decimalArray[0];
-            setDecimalValue(decimal.toString());
-
-            const hex = decimalToHex(decimal);
-            setHexValue(hex);
-
-            const binary = decimalToBinary(decimal);
-            setBinaryValue(binary);
-
-            // Single char hex long is just the 2-digit hex
+            setDecimalValue(decimalArray[0].toString());
+            setHexValue(decimalToHex(decimalArray[0]));
+            setBinaryValue(decimalToBinary(decimalArray[0]));
             setHexLongValue(asciiToHexLong(asciiValue));
           }
         } else {
-          // Multiple characters
-          const binary = asciiToBinaryLong(asciiValue);
-          setBinaryValue(binary);
-
-          // Multi-byte hex representation (e.g., "AB" -> "41 42")
-          const hexLong = asciiToHexLong(asciiValue);
-          setHexLongValue(hexLong);
-
-          // For multi-char ASCII, we'll set the decimal to an average or leave empty
+          setBinaryValue(asciiToBinaryLong(asciiValue));
+          setHexLongValue(asciiToHexLong(asciiValue));
           const decimalArray = asciiToDecimalLong(asciiValue);
           if (decimalArray.length > 0) {
             const avgDecimal = Math.round(decimalArray.reduce((a, b) => a + b, 0) / decimalArray.length);
             setDecimalValue(avgDecimal.toString());
-
-            const hex = decimalToHex(avgDecimal);
-            setHexValue(hex);
+            setHexValue(decimalToHex(avgDecimal));
           }
         }
-
-        setAsciiError('');
-        setDecimalError('');
-        setHexError('');
-        setBinaryError('');
-        setHexLongError('');
+        setAsciiError(''); setDecimalError(''); setHexError(''); setBinaryError(''); setHexLongError('');
       } catch (error) {
-        setHexValue('');
-        setDecimalValue('');
-        setBinaryValue('');
-        setHexLongValue('');
+        setHexValue(''); setDecimalValue(''); setBinaryValue(''); setHexLongValue('');
         setAsciiError(error.message);
       }
     }
@@ -205,78 +132,61 @@ export default function MultiBaseConverter() {
   useEffect(() => {
     if (lastUpdatedField === 'hexLong' && hexLongValue) {
       try {
-        // Convert hex long to ASCII
         const ascii = hexToAsciiLong(hexLongValue);
         setAsciiValue(ascii);
-
-        // Also update binary
-        const binary = asciiToBinaryLong(ascii);
-        setBinaryValue(binary);
-
-        // Calculate average decimal for the single-value fields
+        setBinaryValue(asciiToBinaryLong(ascii));
         const decimalArray = asciiToDecimalLong(ascii);
         if (decimalArray.length > 0) {
           const avgDecimal = Math.round(decimalArray.reduce((a, b) => a + b, 0) / decimalArray.length);
           setDecimalValue(avgDecimal.toString());
-
-          const hex = decimalToHex(avgDecimal);
-          setHexValue(hex);
+          setHexValue(decimalToHex(avgDecimal));
         }
-
-        setHexLongError('');
-        setAsciiError('');
-        setDecimalError('');
-        setHexError('');
-        setBinaryError('');
+        setHexLongError(''); setAsciiError(''); setDecimalError(''); setHexError(''); setBinaryError('');
       } catch (error) {
-        setAsciiValue('');
-        setBinaryValue('');
-        setDecimalValue('');
-        setHexValue('');
+        setAsciiValue(''); setBinaryValue(''); setDecimalValue(''); setHexValue('');
         setHexLongError(error.message);
       }
     }
   }, [hexLongValue, lastUpdatedField]);
 
-  const handleHexChange = (e) => {
-    setLastUpdatedField('hex');
-    setHexValue(e.target.value);
-  };
-
-  const handleDecimalChange = (e) => {
-    setLastUpdatedField('decimal');
-    setDecimalValue(e.target.value);
-  };
-
-  const handleBinaryChange = (e) => {
-    setLastUpdatedField('binary');
-    setBinaryValue(e.target.value);
-  };
-
-  const handleAsciiChange = (e) => {
-    setLastUpdatedField('ascii');
-    setAsciiValue(e.target.value);
-  };
-
-  const handleHexLongChange = (e) => {
-    setLastUpdatedField('hexLong');
-    setHexLongValue(e.target.value);
-  };
-
-  // Clear all inputs
   const handleClear = () => {
-    setHexValue('');
-    setDecimalValue('');
-    setBinaryValue('');
-    setAsciiValue('');
-    setHexLongValue('');
-    setHexError('');
-    setDecimalError('');
-    setBinaryError('');
-    setAsciiError('');
-    setHexLongError('');
+    setHexValue(''); setDecimalValue(''); setBinaryValue(''); setAsciiValue(''); setHexLongValue('');
+    setHexError(''); setDecimalError(''); setBinaryError(''); setAsciiError(''); setHexLongError('');
     setLastUpdatedField(null);
   };
+
+  const fields = [
+    {
+      label: 'Hexadecimal (0x)', placeholder: 'e.g., 0x0001 or FF',
+      value: hexValue, error: hexError,
+      onChange: (e) => { setLastUpdatedField('hex'); setHexValue(e.target.value); },
+      type: 'text',
+    },
+    {
+      label: 'Decimal', placeholder: 'e.g., 1 or 65',
+      value: decimalValue, error: decimalError,
+      onChange: (e) => { setLastUpdatedField('decimal'); setDecimalValue(e.target.value); },
+      type: 'number',
+    },
+    {
+      label: 'Binary', placeholder: 'e.g., 1 or 01000001',
+      value: binaryValue, error: binaryError,
+      onChange: (e) => { setLastUpdatedField('binary'); setBinaryValue(e.target.value); },
+      type: 'text',
+    },
+    {
+      label: 'ASCII String', placeholder: 'e.g., Hello or A',
+      value: asciiValue, error: asciiError,
+      onChange: (e) => { setLastUpdatedField('ascii'); setAsciiValue(e.target.value); },
+      type: 'text',
+    },
+    {
+      label: 'Hex (Multi-byte)', placeholder: 'e.g., 48 65 6C 6C 6F',
+      value: hexLongValue, error: hexLongError,
+      onChange: (e) => { setLastUpdatedField('hexLong'); setHexLongValue(e.target.value); },
+      type: 'text',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -285,119 +195,50 @@ export default function MultiBaseConverter() {
         <meta name="description" content="Convert between hexadecimal, decimal, binary, and ASCII" />
       </Head>
 
-      <header className="border-b border-border py-6">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
+          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
+          <span className="text-control text-textDim">/</span>
+          <span className="text-control font-medium text-text">Multi-Base Converter</span>
+        </div>
+      </nav>
+
+      <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
-          <h1 className="text-3xl font-bold text-text">Multi-Base Converter</h1>
-          <p className="text-textMuted mt-1">Convert between hexadecimal, decimal, binary, and ASCII</p>
+          <h1 className="font-display text-product text-text mb-1 tracking-tight">Multi-Base Converter</h1>
+          <p className="text-body text-textMuted">Convert between hexadecimal, decimal, binary, and ASCII</p>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="bg-surface border border-border rounded-xl p-6">
+      <main className="max-w-4xl mx-auto px-6 py-8">
+        <div className="bg-input border border-border rounded-lg p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Hexadecimal Input */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                Hexadecimal (0x)
-              </label>
-              <input
-                type="text"
-                value={hexValue}
-                onChange={handleHexChange}
-                placeholder="e.g., 0x0001 or FF"
-                className={`w-full p-3 border rounded-lg bg-input text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  hexError ? 'border-red-500' : 'border-border'
-                }`}
-              />
-              {hexError && <p className="text-red-500 text-sm mt-1">{hexError}</p>}
-            </div>
-
-            {/* Decimal Input */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                Decimal
-              </label>
-              <input
-                type="number"
-                value={decimalValue}
-                onChange={handleDecimalChange}
-                placeholder="e.g., 1 or 65"
-                min="0"
-                className={`w-full p-3 border rounded-lg bg-input text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  decimalError ? 'border-red-500' : 'border-border'
-                }`}
-              />
-              {decimalError && <p className="text-red-500 text-sm mt-1">{decimalError}</p>}
-            </div>
-
-            {/* Binary Input */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                Binary
-              </label>
-              <input
-                type="text"
-                value={binaryValue}
-                onChange={handleBinaryChange}
-                placeholder="e.g., 1 or 01000001 or 01001000 01101001"
-                className={`w-full p-3 border rounded-lg bg-input text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  binaryError ? 'border-red-500' : 'border-border'
-                }`}
-              />
-              {binaryError && <p className="text-red-500 text-sm mt-1">{binaryError}</p>}
-            </div>
-
-            {/* ASCII Input */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                ASCII String
-              </label>
-              <input
-                type="text"
-                value={asciiValue}
-                onChange={handleAsciiChange}
-                placeholder="e.g., Hello or A"
-                className={`w-full p-3 border rounded-lg bg-input text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  asciiError ? 'border-red-500' : 'border-border'
-                }`}
-              />
-              {asciiError && <p className="text-red-500 text-sm mt-1">{asciiError}</p>}
-            </div>
-
-            {/* Multi-byte Hex Input */}
-            <div>
-              <label className="block text-sm font-medium text-text mb-2">
-                Hex (Multi-byte)
-              </label>
-              <input
-                type="text"
-                value={hexLongValue}
-                onChange={handleHexLongChange}
-                placeholder="e.g., 48 65 6C 6C 6F or 0x48 0x65"
-                className={`w-full p-3 border rounded-lg bg-input text-text focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-                  hexLongError ? 'border-red-500' : 'border-border'
-                }`}
-              />
-              {hexLongError && <p className="text-red-500 text-sm mt-1">{hexLongError}</p>}
-            </div>
+            {fields.map((field) => (
+              <div key={field.label}>
+                <label className="block text-control font-medium text-text mb-2">{field.label}</label>
+                <input
+                  type={field.type}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={field.placeholder}
+                  min={field.type === 'number' ? '0' : undefined}
+                  className={`w-full p-3 border rounded bg-background text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent transition-colors duration-150 ${field.error ? 'border-error' : 'border-border'}`}
+                />
+                {field.error && <p className="text-error text-micro mt-1">{field.error}</p>}
+              </div>
+            ))}
           </div>
-
           <div className="flex justify-end mt-6">
-            <Button onClick={handleClear} variant="secondary">
-              Clear All
-            </Button>
+            <Button onClick={handleClear} variant="ghost" size="sm">Clear All</Button>
           </div>
         </div>
 
-        <div className="mt-8 bg-surface border border-border rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-text mb-4">About Multi-Base Conversion</h2>
-          <div className="prose prose-invert max-w-none text-textMuted">
-            <p>
-              This tool converts between hexadecimal, decimal, binary, and ASCII representations.
-              When you enter a value in any field, the other fields update automatically.
-            </p>
-            <h3 className="text-text mt-4">Features:</h3>
-            <ul className="list-disc pl-5 mt-2 space-y-1">
+        <div className="mt-8 bg-input border border-border rounded-lg p-6">
+          <h2 className="text-utility text-text mb-4">About Multi-Base Conversion</h2>
+          <div className="max-w-none text-textMuted text-body space-y-3">
+            <p>This tool converts between hexadecimal, decimal, binary, and ASCII representations. When you enter a value in any field, the other fields update automatically.</p>
+            <h3 className="text-body-emphasis text-text mt-4">Features:</h3>
+            <ul className="list-disc pl-5 space-y-1">
               <li>Enter a hexadecimal value (with or without '0x' prefix)</li>
               <li>Enter a decimal value</li>
               <li>Enter a binary value (single or multi-byte sequence)</li>
@@ -405,9 +246,9 @@ export default function MultiBaseConverter() {
               <li>Enter multi-byte hex (e.g., "48 65 6C 6C 6F" or "0x48 0x65")</li>
               <li>All fields update in real-time as you type</li>
             </ul>
-            <div className="mt-4 p-3 bg-surfaceHover rounded-lg">
-              <p className="font-medium text-text">Example:</p>
-              <ul className="list-disc pl-5 mt-1 space-y-1">
+            <div className="p-4 bg-surfaceHover rounded">
+              <p className="text-body-emphasis text-text">Example:</p>
+              <ul className="list-disc pl-5 space-y-1 mt-1">
                 <li>Hex: 0x41 → Decimal: 65 → Binary: 1000001 → ASCII: A → Hex Long: 41</li>
                 <li>ASCII: "Hi" → Binary: 01001000 01101001 → Hex Long: 48 69</li>
                 <li>Hex Long: 48 65 6C 6C 6F → ASCII: "Hello"</li>
@@ -416,6 +257,12 @@ export default function MultiBaseConverter() {
           </div>
         </div>
       </main>
+
+      <footer className="border-t border-border py-6 mt-auto">
+        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
+          Vibe Tools
+        </div>
+      </footer>
     </div>
   );
 }

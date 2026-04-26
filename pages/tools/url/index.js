@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function UrlTool() {
@@ -32,7 +33,6 @@ export default function UrlTool() {
 
   const handleFullEncode = () => {
     try {
-      // More comprehensive URL encoding
       const encodedValue = input.replace(/[^\w\-_.~!*'();:@&=+$,/?#\[\]]/g, function(match) {
         return encodeURIComponent(match);
       });
@@ -64,56 +64,52 @@ export default function UrlTool() {
   return (
     <div className="min-h-screen bg-background">
       <Head>
-        <title>URL Encoder/Decoder - Vibe Tools</title>
+        <title>URL Encoder - Vibe Tools</title>
         <meta name="description" content="Encode and decode URLs" />
       </Head>
 
-      {/* Header */}
-      <header className="border-b border-border py-6">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
+          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
+          <span className="text-control text-textDim">/</span>
+          <span className="text-control font-medium text-text">URL Encoder</span>
+        </div>
+      </nav>
+
+      <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">🔗</div>
-            <div>
-              <h1 className="text-2xl font-bold text-text">URL Encoder/Decoder</h1>
-              <p className="text-textMuted">Encode and decode URLs</p>
-            </div>
-          </div>
+          <h1 className="font-display text-product text-text mb-1 tracking-tight">URL Encoder</h1>
+          <p className="text-body text-textMuted">Encode and decode URLs</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
-          <div>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter URL to encode/decode..."
-              className="w-full h-40 p-4 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary resize-y font-mono text-sm"
-            />
-          </div>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Enter URL to encode/decode..."
+            className="w-full h-40 p-4 border border-border rounded bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
+          />
 
           <div className="flex gap-2 flex-wrap">
             <Button onClick={handleEncode}>Encode URL</Button>
-            <Button onClick={handleDecode} variant="secondary">Decode URL</Button>
-            <Button onClick={handleFullEncode} variant="secondary">Full Encode</Button>
-            <Button onClick={handleClear} variant="secondary">Clear</Button>
+            <Button onClick={handleDecode} variant="dark">Decode URL</Button>
+            <Button onClick={handleFullEncode} variant="outline">Full Encode</Button>
+            <Button onClick={handleClear} variant="ghost">Clear</Button>
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
+            <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
           )}
 
           {encoded && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                <h3 className="font-medium text-text">Encoded URL</h3>
-                <Button variant="secondary" onClick={handleCopyEncoded}>
-                  Copy
-                </Button>
+              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                <h3 className="text-body-emphasis text-text">Encoded URL</h3>
+                <Button variant="ghost" size="sm" onClick={handleCopyEncoded}>Copy</Button>
               </div>
-              <pre className="p-4 text-sm font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-surface">
+              <pre className="p-4 text-control font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-input">
                 {encoded}
               </pre>
             </div>
@@ -121,13 +117,11 @@ export default function UrlTool() {
 
           {decoded && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                <h3 className="font-medium text-text">Decoded URL</h3>
-                <Button variant="secondary" onClick={handleCopyDecoded}>
-                  Copy
-                </Button>
+              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                <h3 className="text-body-emphasis text-text">Decoded URL</h3>
+                <Button variant="ghost" size="sm" onClick={handleCopyDecoded}>Copy</Button>
               </div>
-              <pre className="p-4 text-sm font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-surface">
+              <pre className="p-4 text-control font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-input">
                 {decoded}
               </pre>
             </div>
@@ -136,8 +130,8 @@ export default function UrlTool() {
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-textDim text-sm">
-          Built with ❤️ using Next.js
+        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
+          Vibe Tools
         </div>
       </footer>
     </div>

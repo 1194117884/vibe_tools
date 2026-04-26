@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function TimestampTool() {
@@ -31,26 +32,21 @@ export default function TimestampTool() {
       if (isNaN(timestamp)) {
         throw new Error('Invalid timestamp');
       }
-
-      // Handle both second and millisecond timestamps
       let date;
-      if (input.length === 10) { // Unix timestamp (seconds)
+      if (input.length === 10) {
         date = new Date(timestamp * 1000);
-      } else if (input.length === 13) { // JavaScript timestamp (milliseconds)
+      } else if (input.length === 13) {
         date = new Date(timestamp);
       } else {
-        // Guess based on size - assume seconds if less than 1e10, milliseconds otherwise
         if (Math.abs(timestamp) < 1e10) {
           date = new Date(timestamp * 1000);
         } else {
           date = new Date(timestamp);
         }
       }
-
       if (isNaN(date.getTime())) {
         throw new Error('Invalid timestamp');
       }
-
       setFormattedDate(date.toISOString());
       setUnixTimestamp(timestamp.toString());
       setError('');
@@ -93,55 +89,51 @@ export default function TimestampTool() {
         <meta name="description" content="Convert between timestamps and human readable dates" />
       </Head>
 
-      {/* Header */}
-      <header className="border-b border-border py-6">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
+          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
+          <span className="text-control text-textDim">/</span>
+          <span className="text-control font-medium text-text">Timestamp Converter</span>
+        </div>
+      </nav>
+
+      <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">🕐</div>
-            <div>
-              <h1 className="text-2xl font-bold text-text">Timestamp Converter</h1>
-              <p className="text-textMuted">Convert between Unix timestamps and dates</p>
-            </div>
-          </div>
+          <h1 className="font-display text-product text-text mb-1 tracking-tight">Timestamp Converter</h1>
+          <p className="text-body text-textMuted">Convert between Unix timestamps and dates</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
-          <div>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter date (YYYY-MM-DDTHH:mm:ss) or timestamp (e.g., 1700000000)"
-              className="w-full p-4 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary font-mono text-sm"
-            />
-          </div>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Enter date (YYYY-MM-DDTHH:mm:ss) or timestamp (e.g., 1700000000)"
+            className="w-full p-4 border border-border rounded bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent font-mono text-control transition-colors duration-150"
+          />
 
           <div className="flex gap-2 flex-wrap">
             <Button onClick={convertToTimestamp}>Date to Timestamp</Button>
-            <Button onClick={convertFromTimestamp} variant="secondary">Timestamp to Date</Button>
-            <Button onClick={getCurrentTimestamp} variant="secondary">Current Time</Button>
-            <Button onClick={handleClear} variant="secondary">Clear</Button>
+            <Button onClick={convertFromTimestamp} variant="dark">Timestamp to Date</Button>
+            <Button onClick={getCurrentTimestamp} variant="outline">Current Time</Button>
+            <Button onClick={handleClear} variant="ghost">Clear</Button>
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
+            <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
           )}
 
           {(unixTimestamp || formattedDate) && (
             <div className="space-y-4">
               {unixTimestamp && (
                 <div className="border border-border rounded-lg overflow-hidden">
-                  <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                    <h3 className="font-medium text-text">Unix Timestamp</h3>
-                    <Button variant="secondary" onClick={handleCopyTimestamp}>
-                      Copy
-                    </Button>
+                  <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                    <h3 className="text-body-emphasis text-text">Unix Timestamp</h3>
+                    <Button variant="ghost" size="sm" onClick={handleCopyTimestamp}>Copy</Button>
                   </div>
-                  <pre className="p-4 text-sm font-mono text-text break-all bg-surface">
+                  <pre className="p-4 text-control font-mono text-text break-all bg-input">
                     {unixTimestamp}
                   </pre>
                 </div>
@@ -149,13 +141,11 @@ export default function TimestampTool() {
 
               {formattedDate && (
                 <div className="border border-border rounded-lg overflow-hidden">
-                  <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                    <h3 className="font-medium text-text">ISO Date</h3>
-                    <Button variant="secondary" onClick={handleCopyDate}>
-                      Copy
-                    </Button>
+                  <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                    <h3 className="text-body-emphasis text-text">ISO Date</h3>
+                    <Button variant="ghost" size="sm" onClick={handleCopyDate}>Copy</Button>
                   </div>
-                  <pre className="p-4 text-sm font-mono text-text break-all bg-surface">
+                  <pre className="p-4 text-control font-mono text-text break-all bg-input">
                     {formattedDate}
                   </pre>
                 </div>
@@ -166,8 +156,8 @@ export default function TimestampTool() {
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-textDim text-sm">
-          Built with ❤️ using Next.js
+        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
+          Vibe Tools
         </div>
       </footer>
     </div>

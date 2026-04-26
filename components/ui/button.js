@@ -1,17 +1,27 @@
-// components/ui/button.js
-export function Button({ children, onClick, variant = 'primary', className = '', ...props }) {
-  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
-
-  const variants = {
-    primary: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500',
-    secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white focus:ring-gray-500',
-    outline: 'border border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800 dark:text-white focus:ring-gray-500',
+export function Button({ children, onClick, variant = 'primary', size = 'default', className = '', ...props }) {
+  const sizeClasses = {
+    default: 'px-[15px] py-2 text-control font-medium',
+    sm: 'px-3 py-1.5 text-micro font-medium',
+    lg: 'px-5 py-2.5 text-body font-medium',
   };
 
-  const classes = `${baseClasses} ${variants[variant]} ${className}`;
+  const variants = {
+    primary:
+      'bg-primary text-primaryText hover:bg-primaryHover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] transition-transform',
+    dark:
+      'bg-secondary text-secondaryText hover:bg-secondaryHover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] transition-transform',
+    outline:
+      'border border-border text-text bg-transparent hover:bg-surfaceHover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.97] transition-transform',
+    ghost:
+      'text-primary hover:bg-surfaceHover focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-none active:scale-[0.97] transition-transform',
+  };
 
   return (
-    <button className={classes} onClick={onClick} {...props}>
+    <button
+      className={`rounded inline-flex items-center justify-center gap-1.5 transition-colors duration-150 ${sizeClasses[size]} ${variants[variant]} ${className}`}
+      onClick={onClick}
+      {...props}
+    >
       {children}
     </button>
   );

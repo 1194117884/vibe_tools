@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function ImageTool() {
@@ -25,7 +26,6 @@ export default function ImageTool() {
       setError('');
       setOutputImage(null);
 
-      // For HEIC, immediately decode a preview since browsers can't render HEIC natively
       if (isHeicFile(file)) {
         setLoadingPreview(true);
         try {
@@ -48,23 +48,18 @@ export default function ImageTool() {
     }
   };
 
-const handleConvert = async () => {
+  const handleConvert = async () => {
     if (!inputImage) {
       setError('Please select an image first');
       return;
     }
-
     setConverting(true);
     setError('');
     try {
       let imageDataUrl;
-
       if (isHeicFile(inputImage)) {
         const heic2any = (await import('heic2any')).default;
-        const pngBlob = await heic2any({
-          blob: inputImage,
-          toType: 'image/png',
-        });
+        const pngBlob = await heic2any({ blob: inputImage, toType: 'image/png' });
         imageDataUrl = URL.createObjectURL(pngBlob instanceof Blob ? pngBlob : pngBlob[0]);
       } else {
         imageDataUrl = await new Promise((resolve) => {
@@ -78,14 +73,11 @@ const handleConvert = async () => {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-
         canvas.width = img.width;
         canvas.height = img.height;
-
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
-
         const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
         setOutputImage(dataURL);
         setConverting(false);
@@ -103,7 +95,6 @@ const handleConvert = async () => {
 
   const handleDownload = () => {
     if (!outputImage) return;
-
     const link = document.createElement('a');
     link.href = outputImage;
     link.download = `converted_image.${selectedFormat}`;
@@ -117,22 +108,24 @@ const handleConvert = async () => {
         <meta name="description" content="Convert images between different formats" />
       </Head>
 
-      {/* Header */}
-      <header className="border-b border-border py-6">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
+          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
+          <span className="text-control text-textDim">/</span>
+          <span className="text-control font-medium text-text">Image Converter</span>
+        </div>
+      </nav>
+
+      <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">🖼</div>
-            <div>
-              <h1 className="text-2xl font-bold text-text">Image Converter</h1>
-              <p className="text-textMuted">Convert between HEIC, PNG, JPG, and WebP formats</p>
-            </div>
-          </div>
+          <h1 className="font-display text-product text-text mb-1 tracking-tight">Image Converter</h1>
+          <p className="text-body text-textMuted">Convert between HEIC, PNG, JPG, and WebP formats</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
-          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+          <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-surface">
             <input
               type="file"
               ref={fileInputRef}
@@ -145,14 +138,14 @@ const handleConvert = async () => {
             </Button>
             {inputImage && (
               <div className="mt-4">
-                <p className="text-sm text-textMuted">{inputImage.name}</p>
+                <p className="text-control text-textMuted">{inputImage.name}</p>
                 {loadingPreview ? (
                   <div className="mt-2 flex items-center justify-center gap-2 text-textMuted">
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
-                    <span className="text-sm">Decoding HEIC preview...</span>
+                    <span className="text-control">Decoding HEIC preview...</span>
                   </div>
                 ) : (
                   <img src={heicPreviewUrl || URL.createObjectURL(inputImage)} alt="Selected" className="mt-2 max-h-40 mx-auto rounded" />
@@ -163,11 +156,11 @@ const handleConvert = async () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Output Format</label>
+              <label className="block text-control font-medium text-text mb-2">Output Format</label>
               <select
                 value={selectedFormat}
                 onChange={(e) => setSelectedFormat(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full p-3 border border-border rounded bg-input text-text focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent transition-colors duration-150"
               >
                 <option value="jpeg">JPEG</option>
                 <option value="png">PNG</option>
@@ -175,7 +168,7 @@ const handleConvert = async () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-text mb-2">Quality: {quality}</label>
+              <label className="block text-control font-medium text-text mb-2">Quality: {quality}</label>
               <input
                 type="range"
                 min="0.1"
@@ -183,12 +176,12 @@ const handleConvert = async () => {
                 step="0.1"
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
-                className="w-full"
+                className="w-full accent-primary"
               />
             </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex gap-2 items-center">
             <Button onClick={handleConvert} disabled={converting}>
               {converting ? 'Converting...' : 'Convert Image'}
             </Button>
@@ -201,20 +194,16 @@ const handleConvert = async () => {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
+            <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
           )}
 
           {outputImage && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                <h3 className="font-medium text-text">Converted Image</h3>
-                <Button variant="secondary" onClick={handleDownload}>
-                  Download
-                </Button>
+              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                <h3 className="text-body-emphasis text-text">Converted Image</h3>
+                <Button variant="ghost" size="sm" onClick={handleDownload}>Download</Button>
               </div>
-              <div className="p-4 flex justify-center">
+              <div className="p-4 flex justify-center bg-input">
                 <img src={outputImage} alt="Converted" className="max-h-60 rounded" />
               </div>
             </div>
@@ -223,8 +212,8 @@ const handleConvert = async () => {
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-textDim text-sm">
-          Built with ❤️ using Next.js
+        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
+          Vibe Tools
         </div>
       </footer>
     </div>

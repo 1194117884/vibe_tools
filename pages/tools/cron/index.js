@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function CronTool() {
@@ -23,24 +24,17 @@ export default function CronTool() {
   };
 
   const handleCommonPresets = (preset) => {
-    switch(preset) {
+    switch (preset) {
       case 'every-minute':
-        setMinute('*'); setHour('*'); setDay('*'); setMonth('*'); setWeekday('*');
-        break;
+        setMinute('*'); setHour('*'); setDay('*'); setMonth('*'); setWeekday('*'); break;
       case 'every-hour':
-        setMinute('0'); setHour('*'); setDay('*'); setMonth('*'); setWeekday('*');
-        break;
+        setMinute('0'); setHour('*'); setDay('*'); setMonth('*'); setWeekday('*'); break;
       case 'daily':
-        setMinute('0'); setHour('0'); setDay('*'); setMonth('*'); setWeekday('*');
-        break;
+        setMinute('0'); setHour('0'); setDay('*'); setMonth('*'); setWeekday('*'); break;
       case 'weekly':
-        setMinute('0'); setHour('0'); setDay('*'); setMonth('*'); setWeekday('0');
-        break;
+        setMinute('0'); setHour('0'); setDay('*'); setMonth('*'); setWeekday('0'); break;
       case 'monthly':
-        setMinute('0'); setHour('0'); setDay('1'); setMonth('*'); setWeekday('*');
-        break;
-      default:
-        break;
+        setMinute('0'); setHour('0'); setDay('1'); setMonth('*'); setWeekday('*'); break;
     }
   };
 
@@ -56,96 +50,70 @@ export default function CronTool() {
         <meta name="description" content="Generate and validate cron expressions" />
       </Head>
 
-      {/* Header */}
-      <header className="border-b border-border py-6">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
+          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
+          <span className="text-control text-textDim">/</span>
+          <span className="text-control font-medium text-text">Cron Generator</span>
+        </div>
+      </nav>
+
+      <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">⏰</div>
-            <div>
-              <h1 className="text-2xl font-bold text-text">Cron Generator</h1>
-              <p className="text-textMuted">Build cron expressions</p>
-            </div>
-          </div>
+          <h1 className="font-display text-product text-text mb-1 tracking-tight">Cron Generator</h1>
+          <p className="text-body text-textMuted">Build cron expressions</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
           <div className="grid grid-cols-5 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text mb-1">Minute (0-59)</label>
-              <input
-                type="text"
-                value={minute}
-                onChange={(e) => setMinute(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text mb-1">Hour (0-23)</label>
-              <input
-                type="text"
-                value={hour}
-                onChange={(e) => setHour(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text mb-1">Day (1-31)</label>
-              <input
-                type="text"
-                value={day}
-                onChange={(e) => setDay(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text mb-1">Month (1-12)</label>
-              <input
-                type="text"
-                value={month}
-                onChange={(e) => setMonth(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-text mb-1">Weekday (0-6)</label>
-              <input
-                type="text"
-                value={weekday}
-                onChange={(e) => setWeekday(e.target.value)}
-                className="w-full p-3 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-              />
-            </div>
+            {[
+              { label: 'Minute (0-59)', value: minute, setter: setMinute },
+              { label: 'Hour (0-23)', value: hour, setter: setHour },
+              { label: 'Day (1-31)', value: day, setter: setDay },
+              { label: 'Month (1-12)', value: month, setter: setMonth },
+              { label: 'Weekday (0-6)', value: weekday, setter: setWeekday },
+            ].map((field) => (
+              <div key={field.label}>
+                <label className="block text-micro font-medium text-text mb-1">{field.label}</label>
+                <input
+                  type="text"
+                  value={field.value}
+                  onChange={(e) => field.setter(e.target.value)}
+                  className="w-full p-3 border border-border rounded bg-input text-text focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent text-control transition-colors duration-150"
+                />
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => handleCommonPresets('every-minute')} variant="secondary">Every minute</Button>
-            <Button onClick={() => handleCommonPresets('every-hour')} variant="secondary">Every hour</Button>
-            <Button onClick={() => handleCommonPresets('daily')} variant="secondary">Daily</Button>
-            <Button onClick={() => handleCommonPresets('weekly')} variant="secondary">Weekly</Button>
-            <Button onClick={() => handleCommonPresets('monthly')} variant="secondary">Monthly</Button>
+            {[
+              ['every-minute', 'Every minute'],
+              ['every-hour', 'Every hour'],
+              ['daily', 'Daily'],
+              ['weekly', 'Weekly'],
+              ['monthly', 'Monthly'],
+            ].map(([preset, label]) => (
+              <Button key={preset} onClick={() => handleCommonPresets(preset)} variant="outline" size="sm">
+                {label}
+              </Button>
+            ))}
           </div>
 
-          <div className="flex gap-2 flex-wrap">
-            <Button onClick={handleGenerate}>Generate Expression</Button>
-          </div>
+          <Button onClick={handleGenerate}>Generate Expression</Button>
 
           {error && (
-            <div className="text-red-500 text-sm p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-              {error}
-            </div>
+            <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
           )}
 
           {output && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-surface px-4 py-2 border-b border-border flex justify-between items-center">
-                <h3 className="font-medium text-text">Generated Cron Expression</h3>
-                <Button variant="secondary" onClick={handleCopy}>
-                  Copy
-                </Button>
+              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                <h3 className="text-body-emphasis text-text">Generated Cron Expression</h3>
+                <Button variant="ghost" size="sm" onClick={handleCopy}>Copy</Button>
               </div>
-              <pre className="p-4 text-sm font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-surface">
+              <pre className="p-4 text-control font-mono text-text whitespace-pre-wrap break-all max-h-60 overflow-y-auto bg-input">
                 {output}
               </pre>
             </div>
@@ -154,8 +122,8 @@ export default function CronTool() {
       </main>
 
       <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-textDim text-sm">
-          Built with ❤️ using Next.js
+        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
+          Vibe Tools
         </div>
       </footer>
     </div>

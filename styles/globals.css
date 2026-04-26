@@ -4,98 +4,54 @@
 
 @layer base {
   :root {
-    /* Light theme colors */
-    --background: 255 100% 100%; /* white */
-    --surface: 220 15% 97%; /* light gray */
-    --surfaceHover: 220 10% 92%; /* slightly darker gray */
-    --text: 220  10% 8%; /* dark gray */
-    --textMuted: 220 8% 40%; /* muted gray */
-    --textDim: 220 6% 60%; /* dimmed gray */
-    --primary: 210 100% 50%; /* blue */
-    --primaryText: 0 0% 100%; /* white */
-    --secondary: 220 8% 45%; /* medium gray */
-    --secondaryText: 0 0% 100%; /* white */
-    --border: 220 10% 90%; /* light gray */
-    --borderLight: 220 10% 95%; /* very light gray */
-    --input: 0 0% 100%; /* white */
+    /* Light theme - Apple palette */
+    --background: #ffffff;
+    --surface: #f5f5f7;
+    --surfaceHover: #e8e8ed;
+    --text: #1d1d1f;
+    --textMuted: #6e6e73;
+    --textDim: #86868b;
+    --primary: #0071e3;
+    --primaryHover: #0066cc;
+    --primaryText: #ffffff;
+    --secondary: #1d1d1f;
+    --secondaryHover: #424245;
+    --secondaryText: #ffffff;
+    --border: #d2d2d7;
+    --borderLight: #e8e8ed;
+    --input: #ffffff;
+    --focus-ring: #0071e3;
+    --error: #ff3b30;
+    --errorBg: #fff2f0;
   }
 
   .dark {
-    /* Dark theme colors */
-    --background: 220 8% 6%; /* dark background */
-    --surface: 220 6% 10%; /* dark surface */
-    --surfaceHover: 220 5% 15%; /* slightly lighter dark */
-    --text: 220 10% 95%; /* light text */
-    --textMuted: 220 8% 60%; /* muted light */
-    --textDim: 220 6% 45%; /* dimmed light */
-    --primary: 210 100% 60%; /* brighter blue */
-    --primaryText: 0 0% 100%; /* white */
-    --secondary: 220 8% 25%; /* medium dark gray */
-    --secondaryText: 0 0% 100%; /* white */
-    --border: 220 5% 15%; /* dark border */
-    --borderLight: 220 4% 12%; /* darker border */
-    --input: 220 6% 12%; /* dark input */
+    /* Dark theme - Apple graphite palette */
+    --background: #000000;
+    --surface: #272729;
+    --surfaceHover: #2a2a2c;
+    --text: #f5f5f7;
+    --textMuted: #86868b;
+    --textDim: #6e6e73;
+    --primary: #2997ff;
+    --primaryHover: #0071e3;
+    --primaryText: #ffffff;
+    --secondary: #424245;
+    --secondaryHover: #6e6e73;
+    --secondaryText: #ffffff;
+    --border: #424245;
+    --borderLight: #2a2a2c;
+    --input: #1d1d1f;
+    --focus-ring: #2997ff;
+    --error: #ff453a;
+    --errorBg: #3a1a1a;
   }
 }
 
-@layer components {
-  .bg-background {
-    @apply bg-[hsl(var(--background))];
-  }
-
-  .bg-surface {
-    @apply bg-[hsl(var(--surface))];
-  }
-
-  .bg-surfaceHover {
-    @apply bg-[hsl(var(--surfaceHover))];
-  }
-
-  .text-text {
-    @apply text-[hsl(var(--text))];
-  }
-
-  .text-textMuted {
-    @apply text-[hsl(var(--textMuted))];
-  }
-
-  .text-textDim {
-    @apply text-[hsl(var(--textDim))];
-  }
-
-  .text-primaryText {
-    @apply text-[hsl(var(--primaryText))];
-  }
-
-  .text-secondaryText {
-    @apply text-[hsl(var(--secondaryText))];
-  }
-
-  .bg-primary {
-    @apply bg-[hsl(var(--primary))];
-  }
-
-  .bg-secondary {
-    @apply bg-[hsl(var(--secondary))];
-  }
-
-  .border-border {
-    @apply border-[hsl(var(--border))];
-  }
-
-  .border-borderLight {
-    @apply border-[hsl(var(--borderLight))];
-  }
-
-  .bg-input {
-    @apply bg-[hsl(var(--input))];
-  }
-
-  .hover\:bg-primaryHover:hover {
-    @apply hover:bg-[hsl(calc(var(--primary)/360*360+0)calc(var(--primary)*1.2)calc(var(--primary)*0.9))];
-  }
-
-  .hover\:bg-secondaryHover:hover {
-    @apply hover:bg-[hsl(calc(var(--secondary)/360*360+0)calc(var(--secondary)*1.2)calc(var(--secondary)*0.9))];
+@layer base {
+  html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
