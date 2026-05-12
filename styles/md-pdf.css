@@ -132,6 +132,8 @@
     border-radius: 0;
     max-width: none;
     font-family: 'CJK', 'PingFang SC', 'STHeitiSC-Medium', 'Hiragino Sans GB', sans-serif;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .md-pdf-preview h1 { page-break-before: avoid; page-break-after: avoid; }
