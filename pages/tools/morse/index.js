@@ -47,11 +47,11 @@ const MORSE_NODES = [
 ];
 
 const MORSE_MAP = {
-  'A': '.-',   'B': '-...', 'C': '-.-.', 'D': '-..',  'E': '.',
-  'F': '..-.', 'G': '--.',  'H': '....', 'I': '..',   'J': '.---',
-  'K': '-.-',  'L': '.-..', 'M': '--',   'N': '-.',   'O': '---',
-  'P': '.--.', 'Q': '--.-', 'R': '.-.',  'S': '...',  'T': '-',
-  'U': '..-',  'V': '...-', 'W': '.--',  'X': '-..-', 'Y': '-.--',
+  'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+  'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+  'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+  'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+  'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
   'Z': '--..',
   '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-',
   '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
@@ -529,11 +529,10 @@ export default function MorseTool() {
               role="tab"
               aria-selected={activeTab === 'translator'}
               onClick={() => setActiveTab('translator')}
-              className={`px-5 py-2.5 text-control font-medium border-b-2 transition-colors duration-150 ${
-                activeTab === 'translator'
+              className={`px-5 py-2.5 text-control font-medium border-b-2 transition-colors duration-150 ${activeTab === 'translator'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-textDim hover:text-text'
-              }`}
+                }`}
             >
               <span className="mr-1.5">⚡</span> Telegraph Key
             </button>
@@ -541,11 +540,10 @@ export default function MorseTool() {
               role="tab"
               aria-selected={activeTab === 'practice'}
               onClick={() => setActiveTab('practice')}
-              className={`px-5 py-2.5 text-control font-medium border-b-2 transition-colors duration-150 ${
-                activeTab === 'practice'
+              className={`px-5 py-2.5 text-control font-medium border-b-2 transition-colors duration-150 ${activeTab === 'practice'
                   ? 'border-primary text-primary'
                   : 'border-transparent text-textDim hover:text-text'
-              }`}
+                }`}
             >
               <span className="mr-1.5">📻</span> Practice
             </button>
@@ -555,498 +553,493 @@ export default function MorseTool() {
 
       <main className="max-w-6xl mx-auto px-6 py-6">
         {activeTab === 'translator' && (
-        <div className="space-y-5">
-          {/* SVG Tree */}
-          <div className="border border-border rounded-lg overflow-hidden bg-input">
-            <svg
-              viewBox="0 0 1320 720"
-              width="100%"
-              preserveAspectRatio="xMidYMid meet"
-              style={{ maxHeight: '50vh', display: 'block', height: 'auto' }}
-            >
-              <defs>
-                <filter id="morse-glow-active">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="morse-glow-path">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-                <filter id="morse-glow-letter">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
-                  <feMerge>
-                    <feMergeNode in="blur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
+          <div className="space-y-5">
+            {/* SVG Tree */}
+            <div className="border border-border rounded-lg overflow-hidden bg-input">
+              <svg
+                viewBox="0 0 1320 720"
+                width="100%"
+                preserveAspectRatio="xMidYMid meet"
+                style={{ maxHeight: '50vh', display: 'block', height: 'auto' }}
+              >
+                <defs>
+                  <filter id="morse-glow-active">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter id="morse-glow-path">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <filter id="morse-glow-letter">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
 
-              <rect width="1320" height="720" fill="transparent" />
+                <rect width="1320" height="720" fill="transparent" />
 
-              {MORSE_NODES.map((node, i) => {
-                const [, dotChild, dashChild, x, y] = node;
-                const elements = [];
+                {MORSE_NODES.map((node, i) => {
+                  const [, dotChild, dashChild, x, y] = node;
+                  const elements = [];
 
-                if (dotChild !== -1) {
-                  const child = MORSE_NODES[dotChild];
-                  const active = currentNode === dotChild || pathSet.has(dotChild);
-                  elements.push(
-                    <line
-                      key={`dot-${i}-${dotChild}`}
-                      x1={x} y1={y} x2={child[3]} y2={child[4]}
-                      stroke={active ? '#00ff78' : 'var(--border)'}
-                      strokeWidth={active ? 5 : 3}
-                      strokeLinecap="round"
-                      filter={active ? 'url(#morse-glow-path)' : undefined}
-                    />,
+                  if (dotChild !== -1) {
+                    const child = MORSE_NODES[dotChild];
+                    const active = currentNode === dotChild || pathSet.has(dotChild);
+                    elements.push(
+                      <line
+                        key={`dot-${i}-${dotChild}`}
+                        x1={x} y1={y} x2={child[3]} y2={child[4]}
+                        stroke={active ? '#00ff78' : 'var(--border)'}
+                        strokeWidth={active ? 5 : 3}
+                        strokeLinecap="round"
+                        filter={active ? 'url(#morse-glow-path)' : undefined}
+                      />,
+                    );
+                  }
+
+                  if (dashChild !== -1) {
+                    const child = MORSE_NODES[dashChild];
+                    const active = currentNode === dashChild || pathSet.has(dashChild);
+                    elements.push(
+                      <line
+                        key={`dash-${i}-${dashChild}`}
+                        x1={x} y1={y} x2={child[3]} y2={child[4]}
+                        stroke={active ? '#00ff78' : 'var(--border)'}
+                        strokeWidth={active ? 5 : 3}
+                        strokeLinecap="round"
+                        filter={active ? 'url(#morse-glow-path)' : undefined}
+                      />,
+                    );
+                  }
+
+                  return elements;
+                })}
+
+                {MORSE_NODES.map((node, i) => {
+                  const [letter, , , x, y] = node;
+                  const isCurrent = i === currentNode;
+                  const isInPath = pathSet.has(i);
+                  const isGlowing = i === glowNodeIdx;
+
+                  let fillColor = 'var(--border)';
+                  let strokeColor = 'var(--textDim)';
+                  let textColor = 'var(--textMuted)';
+                  let radius = NODE_RADIUS;
+                  let fontSize = 24;
+                  let fontWeight = 'normal';
+                  let glowFilter = undefined;
+                  let glowCircle = null;
+
+                  if (isCurrent) {
+                    const r = NODE_RADIUS + 6 + Math.round(4 * pulse);
+                    fillColor = `rgb(${Math.round(50 + 50 * pulse)},255,${Math.round(100 + 50 * pulse)})`;
+                    strokeColor = '#00ff96';
+                    textColor = '#ffffff';
+                    radius = r;
+                    fontSize = 28;
+                    fontWeight = 'bold';
+                    glowFilter = 'url(#morse-glow-active)';
+                    glowCircle = (
+                      <circle
+                        cx={x} cy={y} r={r + 10}
+                        fill="none"
+                        stroke="#00ff64"
+                        strokeWidth={2}
+                        opacity={0.3 + 0.3 * pulse}
+                        filter="url(#morse-glow-active)"
+                      />
+                    );
+                  } else if (isInPath) {
+                    fillColor = '#00a040';
+                    strokeColor = '#00d060';
+                    textColor = '#e0e0e0';
+                    glowFilter = 'url(#morse-glow-path)';
+                  }
+
+                  if (isGlowing) {
+                    textColor = '#ffd700';
+                    fontWeight = 'bold';
+                    fontSize = 28;
+                    glowFilter = 'url(#morse-glow-letter)';
+                  }
+
+                  return (
+                    <g key={`node-${i}`}>
+                      {glowCircle}
+                      <circle
+                        cx={x} cy={y} r={radius}
+                        fill={fillColor}
+                        stroke={strokeColor}
+                        strokeWidth={3}
+                        filter={glowFilter}
+                      />
+                      {letter && (
+                        <>
+                          <text
+                            x={x + 1} y={y + 1}
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            fill="#000000"
+                            fontSize={fontSize}
+                            fontWeight={fontWeight}
+                            fontFamily="monospace"
+                            style={{ pointerEvents: 'none', userSelect: 'none' }}
+                            opacity={0.4}
+                          >
+                            {letter}
+                          </text>
+                          <text
+                            x={x} y={y}
+                            textAnchor="middle"
+                            dominantBaseline="central"
+                            fill={textColor}
+                            fontSize={fontSize}
+                            fontWeight={fontWeight}
+                            fontFamily="monospace"
+                            style={{ pointerEvents: 'none', userSelect: 'none' }}
+                          >
+                            {letter}
+                          </text>
+                        </>
+                      )}
+                    </g>
                   );
-                }
-
-                if (dashChild !== -1) {
-                  const child = MORSE_NODES[dashChild];
-                  const active = currentNode === dashChild || pathSet.has(dashChild);
-                  elements.push(
-                    <line
-                      key={`dash-${i}-${dashChild}`}
-                      x1={x} y1={y} x2={child[3]} y2={child[4]}
-                      stroke={active ? '#00ff78' : 'var(--border)'}
-                      strokeWidth={active ? 5 : 3}
-                      strokeLinecap="round"
-                      filter={active ? 'url(#morse-glow-path)' : undefined}
-                    />,
-                  );
-                }
-
-                return elements;
-              })}
-
-              {MORSE_NODES.map((node, i) => {
-                const [letter, , , x, y] = node;
-                const isCurrent = i === currentNode;
-                const isInPath = pathSet.has(i);
-                const isGlowing = i === glowNodeIdx;
-
-                let fillColor = 'var(--border)';
-                let strokeColor = 'var(--textDim)';
-                let textColor = 'var(--textMuted)';
-                let radius = NODE_RADIUS;
-                let fontSize = 24;
-                let fontWeight = 'normal';
-                let glowFilter = undefined;
-                let glowCircle = null;
-
-                if (isCurrent) {
-                  const r = NODE_RADIUS + 6 + Math.round(4 * pulse);
-                  fillColor = `rgb(${Math.round(50 + 50 * pulse)},255,${Math.round(100 + 50 * pulse)})`;
-                  strokeColor = '#00ff96';
-                  textColor = '#ffffff';
-                  radius = r;
-                  fontSize = 28;
-                  fontWeight = 'bold';
-                  glowFilter = 'url(#morse-glow-active)';
-                  glowCircle = (
-                    <circle
-                      cx={x} cy={y} r={r + 10}
-                      fill="none"
-                      stroke="#00ff64"
-                      strokeWidth={2}
-                      opacity={0.3 + 0.3 * pulse}
-                      filter="url(#morse-glow-active)"
-                    />
-                  );
-                } else if (isInPath) {
-                  fillColor = '#00a040';
-                  strokeColor = '#00d060';
-                  textColor = '#e0e0e0';
-                  glowFilter = 'url(#morse-glow-path)';
-                }
-
-                if (isGlowing) {
-                  textColor = '#ffd700';
-                  fontWeight = 'bold';
-                  fontSize = 28;
-                  glowFilter = 'url(#morse-glow-letter)';
-                }
-
-                return (
-                  <g key={`node-${i}`}>
-                    {glowCircle}
-                    <circle
-                      cx={x} cy={y} r={radius}
-                      fill={fillColor}
-                      stroke={strokeColor}
-                      strokeWidth={3}
-                      filter={glowFilter}
-                    />
-                    {letter && (
-                      <>
-                        <text
-                          x={x + 1} y={y + 1}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fill="#000000"
-                          fontSize={fontSize}
-                          fontWeight={fontWeight}
-                          fontFamily="monospace"
-                          style={{ pointerEvents: 'none', userSelect: 'none' }}
-                          opacity={0.4}
-                        >
-                          {letter}
-                        </text>
-                        <text
-                          x={x} y={y}
-                          textAnchor="middle"
-                          dominantBaseline="central"
-                          fill={textColor}
-                          fontSize={fontSize}
-                          fontWeight={fontWeight}
-                          fontFamily="monospace"
-                          style={{ pointerEvents: 'none', userSelect: 'none' }}
-                        >
-                          {letter}
-                        </text>
-                      </>
-                    )}
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
-
-          {/* Code display + signal indicator */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px] border border-border rounded bg-input px-4 py-3 flex items-center gap-3">
-              <span className="text-micro text-textDim">Code:</span>
-              <span className="text-body font-mono text-text tracking-widest">
-                {currentCode || ' '}
-              </span>
-              {!currentCode && (
-                <span className="text-control text-textDim">waiting for signal...</span>
-              )}
-              {lastSignal && (
-                <span
-                  className={`text-control font-bold ml-auto px-2.5 py-0.5 rounded ${
-                    lastSignal.type === 'dot'
-                      ? 'bg-[#00ff64] text-black'
-                      : 'bg-[#ffb800] text-black'
-                  }`}
-                  style={{ animation: 'signal-flash 0.4s ease-out' }}
-                >
-                  {lastSignal.type === 'dot' ? 'DOT' : 'DASH'}
-                </span>
-              )}
+                })}
+              </svg>
             </div>
-            {currentCode && currentLetter && !atLeaf && (
-              <span className="text-control text-textMuted">wait or press Enter to commit</span>
-            )}
-          </div>
 
-          {/* Telegraph Key */}
-          <div className="flex flex-col items-center py-4">
-            <div
-              className="relative select-none cursor-pointer"
-              onMouseDown={handlePressStart}
-              onMouseUp={handlePressEnd}
-              onMouseLeave={handleKeyCancel}
-              onTouchStart={handlePressStart}
-              onTouchEnd={handlePressEnd}
-              role="button"
-              tabIndex={0}
-              aria-label="Telegraph key - press and hold"
-            >
-              {/* Signal wave rings */}
-              {showWave && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="wave-ring" />
-                  <div className="wave-ring" style={{ animationDelay: '0.15s' }} />
-                  <div className="wave-ring" style={{ animationDelay: '0.3s' }} />
-                </div>
-              )}
+            {/* Code display + signal indicator */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex-1 min-w-[200px] border border-border rounded bg-input px-4 py-3 flex items-center gap-3">
+                <span className="text-micro text-textDim">Code:</span>
+                <span className="text-body font-mono text-text tracking-widest">
+                  {currentCode || ' '}
+                </span>
+                {!currentCode && (
+                  <span className="text-control text-textDim">waiting for signal...</span>
+                )}
+                {lastSignal && (
+                  <span
+                    className={`text-control font-bold ml-auto px-2.5 py-0.5 rounded ${lastSignal.type === 'dot'
+                        ? 'bg-[#00ff64] text-black'
+                        : 'bg-[#ffb800] text-black'
+                      }`}
+                    style={{ animation: 'signal-flash 0.4s ease-out' }}
+                  >
+                    {lastSignal.type === 'dot' ? 'DOT' : 'DASH'}
+                  </span>
+                )}
+              </div>
+            </div>
 
-              {/* Base plate */}
+            {/* Telegraph Key */}
+            <div className="flex flex-col items-center py-4">
               <div
-                className="w-56 h-6 rounded-full mx-auto transition-shadow duration-150"
-                style={{
-                  background: 'linear-gradient(180deg, #6b7280 0%, #4b5563 100%)',
-                  boxShadow: keyPressed
-                    ? '0 2px 8px rgba(0,255,100,0.4), 0 1px 3px rgba(0,0,0,0.5)'
-                    : '0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3)',
-                }}
-              />
+                className="relative select-none cursor-pointer"
+                onMouseDown={handlePressStart}
+                onMouseUp={handlePressEnd}
+                onMouseLeave={handleKeyCancel}
+                onTouchStart={handlePressStart}
+                onTouchEnd={handlePressEnd}
+                role="button"
+                tabIndex={0}
+                aria-label="Telegraph key - press and hold"
+              >
+                {/* Signal wave rings */}
+                {showWave && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="wave-ring" />
+                    <div className="wave-ring" style={{ animationDelay: '0.15s' }} />
+                    <div className="wave-ring" style={{ animationDelay: '0.3s' }} />
+                  </div>
+                )}
 
-              {/* Pivot + lever mechanism */}
-              <div className="relative h-20 mx-auto w-56">
-                {/* Pivot post */}
+                {/* Base plate */}
                 <div
-                  className="absolute left-8 bottom-1 w-3.5 h-10 rounded-sm"
-                  style={{ background: 'linear-gradient(180deg, #9ca3af 0%, #6b7280 100%)' }}
+                  className="w-56 h-6 rounded-full mx-auto transition-shadow duration-150"
+                  style={{
+                    background: 'linear-gradient(180deg, #6b7280 0%, #4b5563 100%)',
+                    boxShadow: keyPressed
+                      ? '0 2px 8px rgba(0,255,100,0.4), 0 1px 3px rgba(0,0,0,0.5)'
+                      : '0 4px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3)',
+                  }}
                 />
 
-                {/* Lever arm */}
-                <div
-                  className="absolute left-6 top-2 w-[184px] h-3 rounded-full origin-left transition-transform duration-75"
-                  style={{
-                    background: 'linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%)',
-                    transform: keyPressed ? 'rotate(3.5deg)' : 'rotate(0deg)',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  {/* Knob */}
+                {/* Pivot + lever mechanism */}
+                <div className="relative h-20 mx-auto w-56">
+                  {/* Pivot post */}
                   <div
-                    className="absolute -right-2 -top-4 w-12 h-12 rounded-full transition-all duration-75"
+                    className="absolute left-8 bottom-1 w-3.5 h-10 rounded-sm"
+                    style={{ background: 'linear-gradient(180deg, #9ca3af 0%, #6b7280 100%)' }}
+                  />
+
+                  {/* Lever arm */}
+                  <div
+                    className="absolute left-6 top-2 w-[184px] h-3 rounded-full origin-left transition-transform duration-75"
                     style={{
-                      background: keyPressed
-                        ? 'radial-gradient(circle at 40% 35%, #fbbf24, #d97706)'
-                        : 'radial-gradient(circle at 40% 35%, #fcd34d, #b45309)',
+                      background: 'linear-gradient(180deg, #d1d5db 0%, #9ca3af 100%)',
+                      transform: keyPressed ? 'rotate(3.5deg)' : 'rotate(0deg)',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {/* Knob */}
+                    <div
+                      className="absolute -right-2 -top-4 w-12 h-12 rounded-full transition-all duration-75"
+                      style={{
+                        background: keyPressed
+                          ? 'radial-gradient(circle at 40% 35%, #fbbf24, #d97706)'
+                          : 'radial-gradient(circle at 40% 35%, #fcd34d, #b45309)',
+                        boxShadow: keyPressed
+                          ? '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)'
+                          : '0 4px 8px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2)',
+                        transform: keyPressed ? 'translateY(4px)' : 'translateY(0)',
+                      }}
+                    />
+                  </div>
+
+                  {/* Contact point glow */}
+                  <div
+                    className="absolute right-7 bottom-2 w-3 h-3 rounded-full transition-all duration-100"
+                    style={{
+                      background: keyPressed ? '#00ff64' : '#374151',
                       boxShadow: keyPressed
-                        ? '0 2px 4px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.1)'
-                        : '0 4px 8px rgba(0,0,0,0.5), inset 0 2px 4px rgba(255,255,255,0.2)',
-                      transform: keyPressed ? 'translateY(4px)' : 'translateY(0)',
+                        ? '0 0 16px #00ff64, 0 0 32px rgba(0,255,100,0.6), 0 0 48px rgba(0,255,100,0.3)'
+                        : 'none',
+                      transform: keyPressed ? 'scale(1.3)' : 'scale(1)',
                     }}
                   />
                 </div>
 
-                {/* Contact point glow */}
-                <div
-                  className="absolute right-7 bottom-2 w-3 h-3 rounded-full transition-all duration-100"
-                  style={{
-                    background: keyPressed ? '#00ff64' : '#374151',
-                    boxShadow: keyPressed
-                      ? '0 0 16px #00ff64, 0 0 32px rgba(0,255,100,0.6), 0 0 48px rgba(0,255,100,0.3)'
-                      : 'none',
-                    transform: keyPressed ? 'scale(1.3)' : 'scale(1)',
-                  }}
-                />
+                {/* Label */}
+                <div className="text-center mt-1">
+                  <span className="text-micro text-textDim">
+                    {keyPressed
+                      ? willBeDash
+                        ? 'DASH — release now'
+                        : 'DOT · release now'
+                      : 'HOLD key or press SPACE'}
+                  </span>
+                </div>
               </div>
 
-              {/* Label */}
-              <div className="text-center mt-1">
-                <span className="text-micro text-textDim">
-                  {keyPressed
-                    ? willBeDash
-                      ? 'DASH — release now'
-                      : 'DOT · release now'
-                    : 'HOLD key or press SPACE'}
+              {/* Transmission indicator */}
+              <div className="flex items-center gap-2 mt-4">
+                <div
+                  className="w-2.5 h-2.5 rounded-full transition-all duration-100"
+                  style={{
+                    background: keyPressed ? '#00ff64' : '#374151',
+                    boxShadow: keyPressed ? '0 0 8px #00ff64' : 'none',
+                  }}
+                />
+                <span className="text-legal text-textDim uppercase tracking-widest">
+                  {keyPressed ? 'Transmitting' : 'Standby'}
                 </span>
               </div>
             </div>
 
-            {/* Transmission indicator */}
-            <div className="flex items-center gap-2 mt-4">
-              <div
-                className="w-2.5 h-2.5 rounded-full transition-all duration-100"
-                style={{
-                  background: keyPressed ? '#00ff64' : '#374151',
-                  boxShadow: keyPressed ? '0 0 8px #00ff64' : 'none',
-                }}
-              />
-              <span className="text-legal text-textDim uppercase tracking-widest">
-                {keyPressed ? 'Transmitting' : 'Standby'}
-              </span>
-            </div>
-          </div>
-
-          {/* Secondary controls */}
-          <div className="flex gap-2 flex-wrap justify-center">
-            <Button onClick={handleCommit} variant="outline" size="sm">
-              Commit (Enter)
-            </Button>
-            <Button onClick={handleWordSpace} variant="outline" size="sm">
-              Word Space
-            </Button>
-            <Button onClick={handleBackspace} variant="ghost" size="sm">
-              ⌫ Backspace
-            </Button>
-            <Button onClick={handleClear} variant="ghost" size="sm">
-              Clear All
-            </Button>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
-          )}
-
-          {/* Output */}
-          <div className="border border-border rounded-lg overflow-hidden">
-            <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
-              <h3 className="text-body-emphasis text-text">Output</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (!output) return;
-                  navigator.clipboard.writeText(output).then(
-                    () => alert('Copied!'),
-                    () => alert('Failed to copy'),
-                  );
-                }}
-              >
-                Copy
+            {/* Secondary controls */}
+            <div className="flex gap-2 flex-wrap justify-center">
+              <Button onClick={handleCommit} variant="outline" size="sm">
+                Commit (Enter)
+              </Button>
+              <Button onClick={handleWordSpace} variant="outline" size="sm">
+                Word Space
+              </Button>
+              <Button onClick={handleBackspace} variant="ghost" size="sm">
+                ⌫ Backspace
+              </Button>
+              <Button onClick={handleClear} variant="ghost" size="sm">
+                Clear All
               </Button>
             </div>
-            <pre className="p-4 text-body font-mono text-text whitespace-pre-wrap break-all min-h-[56px] bg-input">
-              {output || ' '}
-            </pre>
-          </div>
 
-        </div>
+            {/* Error */}
+            {error && (
+              <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
+            )}
+
+            {/* Output */}
+            <div className="border border-border rounded-lg overflow-hidden">
+              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
+                <h3 className="text-body-emphasis text-text">Output</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (!output) return;
+                    navigator.clipboard.writeText(output).then(
+                      () => alert('Copied!'),
+                      () => alert('Failed to copy'),
+                    );
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+              <pre className="p-4 text-body font-mono text-text whitespace-pre-wrap break-all min-h-[56px] bg-input">
+                {output || ' '}
+              </pre>
+            </div>
+
+          </div>
         )}
 
         {activeTab === 'practice' && (
-        <div className="space-y-4">
-          {/* ── Practice Mode ── */}
-          {/* Row 1: Fetch + Speed + Play */}
-              <div className="flex gap-3 flex-wrap items-center">
-                <Button onClick={fetchSentence} disabled={isLoadingQuote}>
-                  {isLoadingQuote ? 'Loading...' : practiceSentence ? 'New Sentence' : 'Get Sentence'}
-                </Button>
+          <div className="space-y-4">
+            {/* ── Practice Mode ── */}
+            {/* Row 1: Fetch + Speed + Play */}
+            <div className="flex gap-3 flex-wrap items-center">
+              <Button onClick={fetchSentence} disabled={isLoadingQuote}>
+                {isLoadingQuote ? 'Loading...' : practiceSentence ? 'New Sentence' : 'Get Sentence'}
+              </Button>
 
-                <div className="flex items-center gap-2 ml-2">
-                  <span className="text-micro text-textDim uppercase tracking-wider">Speed</span>
-                  <input
-                    type="range"
-                    min="5"
-                    max="40"
-                    value={wpm}
-                    onChange={(e) => setWpm(Number(e.target.value))}
-                    className="w-28 h-1.5 bg-border rounded-full appearance-none cursor-pointer
+              <div className="flex items-center gap-2 ml-2">
+                <span className="text-micro text-textDim uppercase tracking-wider">Speed</span>
+                <input
+                  type="range"
+                  min="5"
+                  max="40"
+                  value={wpm}
+                  onChange={(e) => setWpm(Number(e.target.value))}
+                  className="w-28 h-1.5 bg-border rounded-full appearance-none cursor-pointer
                       [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                       [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
                       [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
-                    style={{ accentColor: 'var(--primary)' }}
-                  />
-                  <span className="text-control font-mono text-text w-16">{wpm} WPM</span>
-                </div>
+                  style={{ accentColor: 'var(--primary)' }}
+                />
+                <span className="text-control font-mono text-text w-16">{wpm} WPM</span>
+              </div>
 
-                {practiceSentence && (
-                  <Button
-                    onClick={isPlaying ? stopPlayback : playMorseCode}
-                    variant={isPlaying ? 'dark' : 'primary'}
-                    className="ml-auto"
-                  >
-                    {isPlaying ? '⏹ Stop' : '▶ Play Morse'}
+              {practiceSentence && (
+                <Button
+                  onClick={isPlaying ? stopPlayback : playMorseCode}
+                  variant={isPlaying ? 'dark' : 'primary'}
+                  className="ml-auto"
+                >
+                  {isPlaying ? '⏹ Stop' : '▶ Play Morse'}
+                </Button>
+              )}
+            </div>
+
+            {/* Playing indicator */}
+            {isPlaying && (
+              <div className="flex items-center gap-2 text-control text-textMuted">
+                <span
+                  className="inline-block w-2 h-2 rounded-full"
+                  style={{
+                    background: '#00ff64',
+                    boxShadow: '0 0 8px #00ff64',
+                    animation: 'pulse-dot 0.4s ease-in-out infinite alternate',
+                  }}
+                />
+                Transmitting Morse code at {wpm} WPM...
+              </div>
+            )}
+
+            {/* Quote info */}
+            {practiceSentence && (
+              <div className="border border-border rounded bg-input px-4 py-3">
+                <span className="text-micro text-textDim uppercase tracking-wider">Quote loaded</span>
+                {showAnswer ? (
+                  <div className="mt-1.5">
+                    <p className="text-body text-text italic">"{practiceSentence}"</p>
+                    {practiceAuthor && (
+                      <p className="text-control text-textMuted mt-1">— {practiceAuthor}</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-control text-textMuted mt-1">
+                    Press <strong>Play Morse</strong> to hear it, then type your translation below
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* User input */}
+            {practiceSentence && (
+              <div>
+                <label className="text-micro text-textDim uppercase tracking-wider block mb-1.5">
+                  Your translation
+                </label>
+                <textarea
+                  value={userTranslation}
+                  onChange={(e) => {
+                    setUserTranslation(e.target.value);
+                    if (practiceResult) {
+                      setPracticeResult(null);
+                      setShowAnswer(false);
+                    }
+                  }}
+                  placeholder="Type what you hear..."
+                  rows={3}
+                  className="w-full p-3 border border-border rounded bg-input text-text
+                      placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring
+                      focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
+                />
+              </div>
+            )}
+
+            {/* Action buttons */}
+            {practiceSentence && (
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  onClick={checkAnswer}
+                  disabled={!userTranslation.trim()}
+                >
+                  Check Answer
+                </Button>
+                <Button onClick={revealAnswer} variant="ghost" size="sm">
+                  Reveal
+                </Button>
+                {isPlaying && (
+                  <Button onClick={stopPlayback} variant="ghost" size="sm">
+                    Stop Playback
                   </Button>
                 )}
               </div>
+            )}
 
-              {/* Playing indicator */}
-              {isPlaying && (
-                <div className="flex items-center gap-2 text-control text-textMuted">
-                  <span
-                    className="inline-block w-2 h-2 rounded-full"
-                    style={{
-                      background: '#00ff64',
-                      boxShadow: '0 0 8px #00ff64',
-                      animation: 'pulse-dot 0.4s ease-in-out infinite alternate',
-                    }}
-                  />
-                  Transmitting Morse code at {wpm} WPM...
-                </div>
-              )}
-
-              {/* Quote info */}
-              {practiceSentence && (
-                <div className="border border-border rounded bg-input px-4 py-3">
-                  <span className="text-micro text-textDim uppercase tracking-wider">Quote loaded</span>
-                  {showAnswer ? (
-                    <div className="mt-1.5">
-                      <p className="text-body text-text italic">"{practiceSentence}"</p>
-                      {practiceAuthor && (
-                        <p className="text-control text-textMuted mt-1">— {practiceAuthor}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-control text-textMuted mt-1">
-                      Press <strong>Play Morse</strong> to hear it, then type your translation below
+            {/* Result */}
+            {practiceResult && (
+              <div
+                className={`text-control p-3.5 rounded flex items-start gap-3 ${practiceResult === 'correct'
+                    ? 'bg-[#00ff64]/10 text-[#00ff64] border border-[#00ff64]/30'
+                    : 'bg-errorBg text-error border border-error/30'
+                  }`}
+              >
+                <span className="text-lg mt-0.5">
+                  {practiceResult === 'correct' ? '✓' : '✗'}
+                </span>
+                <div>
+                  <strong>
+                    {practiceResult === 'correct' ? 'Correct!' : 'Not quite right'}
+                  </strong>
+                  {practiceResult === 'incorrect' && practiceSentence && (
+                    <p className="mt-1">
+                      The correct text was: <span className="italic">"{practiceSentence}"</span>
                     </p>
                   )}
-                </div>
-              )}
-
-              {/* User input */}
-              {practiceSentence && (
-                <div>
-                  <label className="text-micro text-textDim uppercase tracking-wider block mb-1.5">
-                    Your translation
-                  </label>
-                  <textarea
-                    value={userTranslation}
-                    onChange={(e) => {
-                      setUserTranslation(e.target.value);
-                      if (practiceResult) {
-                        setPracticeResult(null);
-                        setShowAnswer(false);
-                      }
-                    }}
-                    placeholder="Type what you hear..."
-                    rows={3}
-                    className="w-full p-3 border border-border rounded bg-input text-text
-                      placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring
-                      focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
-                  />
-                </div>
-              )}
-
-              {/* Action buttons */}
-              {practiceSentence && (
-                <div className="flex gap-2 flex-wrap">
-                  <Button
-                    onClick={checkAnswer}
-                    disabled={!userTranslation.trim()}
-                  >
-                    Check Answer
-                  </Button>
-                  <Button onClick={revealAnswer} variant="ghost" size="sm">
-                    Reveal
-                  </Button>
-                  {isPlaying && (
-                    <Button onClick={stopPlayback} variant="ghost" size="sm">
-                      Stop Playback
-                    </Button>
+                  {practiceResult === 'correct' && (
+                    <p className="mt-1 text-textMuted">Great ear! Try another sentence.</p>
                   )}
                 </div>
-              )}
-
-              {/* Result */}
-              {practiceResult && (
-                <div
-                  className={`text-control p-3.5 rounded flex items-start gap-3 ${
-                    practiceResult === 'correct'
-                      ? 'bg-[#00ff64]/10 text-[#00ff64] border border-[#00ff64]/30'
-                      : 'bg-errorBg text-error border border-error/30'
-                  }`}
-                >
-                  <span className="text-lg mt-0.5">
-                    {practiceResult === 'correct' ? '✓' : '✗'}
-                  </span>
-                  <div>
-                    <strong>
-                      {practiceResult === 'correct' ? 'Correct!' : 'Not quite right'}
-                    </strong>
-                    {practiceResult === 'incorrect' && practiceSentence && (
-                      <p className="mt-1">
-                        The correct text was: <span className="italic">"{practiceSentence}"</span>
-                      </p>
-                    )}
-                    {practiceResult === 'correct' && (
-                      <p className="mt-1 text-textMuted">Great ear! Try another sentence.</p>
-                    )}
-                  </div>
-                </div>
-              )}
-        </div>
+              </div>
+            )}
+          </div>
         )}
       </main>
 
-      
+
 
       <style jsx>{`
         @keyframes signal-flash {
