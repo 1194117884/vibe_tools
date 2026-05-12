@@ -120,7 +120,7 @@ export default function MdPdfTool() {
         {/* Upload Area */}
         {(state === 'idle' || state === 'error') && (
           <div
-            className={`upload-area border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
+            className={`upload-area relative border-2 border-dashed rounded-lg p-12 text-center cursor-pointer transition-colors ${
               dragOver
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-primary/50 hover:bg-surface/50'
@@ -128,17 +128,12 @@ export default function MdPdfTool() {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            onClick={() => fileInputRef.current?.click()}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
-            tabIndex={0}
-            role="button"
-            aria-label="上传 Markdown 文件"
           >
             <input
               ref={fileInputRef}
               type="file"
               accept=".md"
-              className="hidden"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               onChange={handleFileChange}
             />
             <div className="text-4xl mb-3 text-textDim">📄</div>
