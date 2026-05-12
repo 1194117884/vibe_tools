@@ -15,7 +15,6 @@ export default function MdPdfTool() {
   const [html, setHtml] = useState('');
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
-  const previewRef = useRef(null);
   const [dragOver, setDragOver] = useState(false);
 
   const processFile = useCallback((file) => {
@@ -131,6 +130,10 @@ export default function MdPdfTool() {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+            tabIndex={0}
+            role="button"
+            aria-label="上传 Markdown 文件"
           >
             <input
               ref={fileInputRef}
@@ -189,7 +192,6 @@ export default function MdPdfTool() {
             </div>
 
             <div
-              ref={previewRef}
               className="md-pdf-preview"
               dangerouslySetInnerHTML={{ __html: html }}
             />
@@ -207,7 +209,7 @@ export default function MdPdfTool() {
         )}
       </main>
 
-      <footer className="border-b border-border py-6 mt-auto">
+      <footer className="border-t border-border py-6 mt-auto">
         <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
           Vibe Tools
         </div>
