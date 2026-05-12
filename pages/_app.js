@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import '../styles/globals.css';
+import '../styles/md-pdf.css';
 
 export default function App({ Component, pageProps }) {
   return (

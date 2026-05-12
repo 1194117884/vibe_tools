@@ -3,7 +3,6 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 import { marked } from 'marked';
-import '../../../styles/md-pdf.css';
 
 marked.use({ breaks: true });
 
