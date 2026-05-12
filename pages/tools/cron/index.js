@@ -49,15 +49,6 @@ export default function CronTool() {
         <title>Cron Generator - Vibe Tools</title>
         <meta name="description" content="Generate and validate cron expressions" />
       </Head>
-
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
-          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
-          <span className="text-control text-textDim">/</span>
-          <span className="text-control font-medium text-text">Cron Generator</span>
-        </div>
-      </nav>
-
       <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="font-display text-product text-text mb-1 tracking-tight">Cron Generator</h1>
@@ -120,12 +111,6 @@ export default function CronTool() {
           )}
         </div>
       </main>
-
-      <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
-          Vibe Tools
-        </div>
-      </footer>
     </div>
   );
 }

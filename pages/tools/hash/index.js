@@ -49,15 +49,6 @@ export default function HashTool() {
         <title>Hash Generator - Vibe Tools</title>
         <meta name="description" content="Generate hash values using various algorithms" />
       </Head>
-
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-4xl mx-auto px-6 h-12 flex items-center gap-6">
-          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">Vibe Tools</Link>
-          <span className="text-control text-textDim">/</span>
-          <span className="text-control font-medium text-text">Hash Generator</span>
-        </div>
-      </nav>
-
       <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="font-display text-product text-text mb-1 tracking-tight">Hash Generator</h1>
@@ -106,12 +97,6 @@ export default function HashTool() {
           )}
         </div>
       </main>
-
-      <footer className="border-t border-border py-6 mt-auto">
-        <div className="max-w-4xl mx-auto px-6 text-center text-micro text-textDim">
-          Vibe Tools
-        </div>
-      </footer>
     </div>
   );
 }

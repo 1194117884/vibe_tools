@@ -512,17 +512,6 @@ export default function MorseTool() {
         <title>Morse Code - Vibe Tools</title>
         <meta name="description" content="Interactive Morse code translator with telegraph key and visual binary tree" />
       </Head>
-
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-6xl mx-auto px-6 h-12 flex items-center gap-6">
-          <Link href="/" className="text-control text-textDim hover:text-text transition-colors">
-            Vibe Tools
-          </Link>
-          <span className="text-control text-textDim">/</span>
-          <span className="text-control font-medium text-text">Morse Code</span>
-        </div>
-      </nav>
-
       <header className="border-b border-border py-8 pb-0">
         <div className="max-w-6xl mx-auto px-6">
           <h1 className="font-display text-product text-text mb-1 tracking-tight">
@@ -1057,11 +1046,7 @@ export default function MorseTool() {
         )}
       </main>
 
-      <footer className="border-t border-border py-5 mt-auto">
-        <div className="max-w-6xl mx-auto px-6 text-center text-micro text-textDim">
-          Hold Space bar or click the telegraph key — quick press (&lt;250ms) = dot, long press = dash · Enter = word space · Backspace = delete
-        </div>
-      </footer>
+      
 
       <style jsx>{`
         @keyframes signal-flash {
