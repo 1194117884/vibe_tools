@@ -18,6 +18,7 @@ const tools = [
   { id: 'md-pdf', name: 'Markdown to PDF', icon: '📄' },
   { id: 'timestamp', name: 'Timestamp', icon: '🕐' },
   { id: 'morse', name: 'Morse Code', icon: '🌳' },
+  { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
 ];
 
 export default function SidebarLayout({ children }) {
