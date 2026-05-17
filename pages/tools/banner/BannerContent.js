@@ -136,6 +136,7 @@ export default function BannerContent() {
   const [pixelOutput, setPixelOutput] = useState('');
   const [pixelSize, setPixelSize] = useState(2);
   const [charSetKey, setCharSetKey] = useState('█ Full Block');
+  const [fetchingQuote, setFetchingQuote] = useState(false);
   const debounceRef = useRef(null);
   const widthRef = useRef(width);
   widthRef.current = width;
@@ -214,6 +215,28 @@ export default function BannerContent() {
     navigator.clipboard.writeText(text).catch(() => {});
   };
 
+  const handleRandomQuote = async () => {
+    setFetchingQuote(true);
+    try {
+      const res = await fetch('/api/random-quote');
+      const data = await res.json();
+      setInput(data.quote);
+    } catch (e) {
+      const fallbacks = [
+        'The only way to do great work is to love what you do.',
+        'Stay hungry, stay foolish.',
+        'Less is more.',
+        'Make it simple, but significant.',
+        'Simplicity is the ultimate sophistication.',
+        'Think different.',
+        'Move fast and break things.',
+        'Done is better than perfect.',
+      ];
+      setInput(fallbacks[Math.floor(Math.random() * fallbacks.length)]);
+    }
+    setFetchingQuote(false);
+  };
+
   const hasResults = Object.keys(figletResults).length > 0 || pixelOutput;
 
   return (
@@ -231,13 +254,24 @@ export default function BannerContent() {
 
       <main className="max-w-7xl mx-auto px-6 md:px-10 py-8 space-y-6">
         {/* Input textarea */}
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type something to generate your banner..."
-          spellCheck={false}
-          className="w-full h-28 p-4 border border-border rounded-lg bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
-        />
+        <div className="relative">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type something to generate your banner..."
+            spellCheck={false}
+            className="w-full h-28 p-4 border border-border rounded-lg bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRandomQuote}
+            disabled={fetchingQuote}
+            className="absolute top-2 right-2"
+          >
+            {fetchingQuote ? '...' : '🎲 Random'}
+          </Button>
+        </div>
 
         {/* Mode toggle + controls */}
         <div className="flex flex-wrap items-end gap-4">
