@@ -16,6 +16,7 @@ const tools = [
   { id: 'md-pdf', name: 'Markdown to PDF', desc: 'Convert MD to PDF', icon: '📄' },
   { id: 'timestamp', name: 'Timestamp', desc: 'Unix timestamp converter', icon: '🕐' },
   { id: 'morse', name: 'Morse Code', desc: 'Interactive Morse tree translator', icon: '🌳' },
+  { id: 'banner', name: 'Banner Text', desc: 'Generate ASCII art text banners', icon: '🔤' },
   { id: 'jsformat', name: 'JS Formatter', desc: 'Format & minify JavaScript', icon: '📐' },
 ];
 
@@ -37,7 +38,7 @@ export default function Home() {
             Your personal toolkit for everyday tasks
           </p>
           <p className="mt-3 text-body text-[#6e6e73] max-w-lg">
-            Fifteen simple utilities to format JSON, encode data, generate hashes,
+            Sixteen simple utilities to format JSON, encode data, generate hashes,
             convert images, and more — all running locally in your browser.
           </p>
         </div>
