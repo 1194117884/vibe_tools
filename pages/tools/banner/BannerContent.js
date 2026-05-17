@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import figlet from 'figlet';
 import { Button } from '../../../components/ui/button';
 
@@ -64,15 +64,86 @@ const FONTS = [
   'Shadow', 'Univers', 'Weird',
 ];
 
+const PIXEL_CHAR_SETS = {
+  '█ Full Block': ' ░▒▓█',
+  '⬛ B&W': ' ⬜⬛',
+  '▓ Gradient': ' ░░▒▒▓▓██',
+  '▌ Half': ' ▎▌▊█',
+  '● Circle': ' ○◐●⬤',
+};
+
+function renderPixel(text, options = {}) {
+  const { pixelSize = 2, charSet = ' ░▒▓█', fontSize = 64 } = options;
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const font = `bold ${fontSize}px "PingFang SC","Noto Sans SC","Microsoft YaHei","Helvetica Neue",sans-serif`;
+  ctx.font = font;
+
+  const metrics = ctx.measureText(text);
+  const textWidth = Math.max(Math.ceil(metrics.width), 1);
+  const textHeight = Math.ceil(fontSize * 1.3);
+
+  canvas.width = textWidth;
+  canvas.height = textHeight;
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#000000';
+  ctx.font = font;
+  ctx.textBaseline = 'top';
+  ctx.fillText(text, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  const levels = charSet.length - 1;
+
+  let result = '';
+  for (let y = 0; y < canvas.height; y += pixelSize) {
+    for (let x = 0; x < canvas.width; x += pixelSize) {
+      let sum = 0;
+      let count = 0;
+      for (let dy = 0; dy < pixelSize && y + dy < canvas.height; dy++) {
+        for (let dx = 0; dx < pixelSize && x + dx < canvas.width; dx++) {
+          const idx = ((y + dy) * canvas.width + (x + dx)) * 4;
+          sum += (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+          count++;
+        }
+      }
+      const avg = sum / count;
+      const level = Math.round(((255 - avg) / 255) * levels);
+      result += charSet[Math.min(level, levels)];
+    }
+    result += '\n';
+  }
+
+  return result;
+}
+
+const PIXEL_SIZE_OPTIONS = [
+  { value: 1, label: 'Fine (1px)' },
+  { value: 2, label: 'Normal (2px)' },
+  { value: 3, label: 'Coarse (3px)' },
+  { value: 4, label: 'Large (4px)' },
+  { value: 6, label: 'XL (6px)' },
+];
+
 export default function BannerContent() {
   const [input, setInput] = useState('');
+  const [mode, setMode] = useState('figlet');
   const [width, setWidth] = useState(80);
-  const [results, setResults] = useState({});
+  const [figletResults, setFigletResults] = useState({});
+  const [pixelOutput, setPixelOutput] = useState('');
+  const [pixelSize, setPixelSize] = useState(2);
+  const [charSetKey, setCharSetKey] = useState('█ Full Block');
   const debounceRef = useRef(null);
   const widthRef = useRef(width);
   widthRef.current = width;
 
-  const renderAll = useCallback((text, w) => {
+  const charSet = PIXEL_CHAR_SETS[charSetKey];
+
+  // ── FIGlet rendering ──
+  const renderAllFiglet = (text, w) => {
     const clamped = Math.max(20, Math.min(500, Number(w) || 80));
     const newResults = {};
     FONTS.forEach((font) => {
@@ -83,39 +154,67 @@ export default function BannerContent() {
       }
     });
     return newResults;
-  }, []);
+  };
 
+  // ── Debounced render on input change ──
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (!input.trim()) {
-      setResults({});
+      setFigletResults({});
+      setPixelOutput('');
       return;
     }
 
     debounceRef.current = setTimeout(() => {
-      setResults(renderAll(input, widthRef.current));
+      if (mode === 'figlet') {
+        setFigletResults(renderAllFiglet(input, widthRef.current));
+        setPixelOutput('');
+      } else {
+        setPixelOutput(renderPixel(input, { pixelSize, charSet }));
+        setFigletResults({});
+      }
     }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [input, renderAll]);
+  }, [input]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Immediate re-render on width change
+  // ── Immediate re-render on setting changes ──
   useEffect(() => {
-    if (!input.trim()) {
-      setResults({});
-      return;
+    if (!input.trim()) return;
+    if (mode === 'figlet') {
+      setFigletResults(renderAllFiglet(input, width));
+      setPixelOutput('');
     }
-    setResults(renderAll(input, width));
-  }, [width]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [width]);
+
+  useEffect(() => {
+    if (!input.trim()) return;
+    if (mode === 'pixel') {
+      setPixelOutput(renderPixel(input, { pixelSize, charSet }));
+      setFigletResults({});
+    }
+  }, [pixelSize, charSetKey, mode]);
+
+  const handleModeChange = (newMode) => {
+    setMode(newMode);
+    if (!input.trim()) return;
+    if (newMode === 'figlet') {
+      setFigletResults(renderAllFiglet(input, width));
+      setPixelOutput('');
+    } else {
+      setPixelOutput(renderPixel(input, { pixelSize, charSet }));
+      setFigletResults({});
+    }
+  };
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text).catch(() => {});
   };
 
-  const hasResults = Object.keys(results).length > 0;
+  const hasResults = Object.keys(figletResults).length > 0 || pixelOutput;
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,46 +224,109 @@ export default function BannerContent() {
             Banner Text Generator
           </h1>
           <p className="text-body text-textMuted">
-            Generate ASCII art text banners with FIGlet fonts
+            Generate ASCII art text banners with FIGlet fonts or pixel blocks
           </p>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 md:px-10 py-8 space-y-6">
-        {/* Input + width */}
-        <div className="space-y-3">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type something to generate your banner..."
-            spellCheck={false}
-            className="w-full h-28 p-4 border border-border rounded-lg bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
-          />
-          <div className="flex items-center gap-3">
-            <label className="text-control text-textDim">Width:</label>
-            <input
-              type="number"
-              value={width}
-              onChange={(e) => setWidth(Number(e.target.value))}
-              min={20}
-              max={500}
-              className="w-20 p-2 border border-border rounded-lg bg-input text-text text-control focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent"
-            />
+        {/* Input textarea */}
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type something to generate your banner..."
+          spellCheck={false}
+          className="w-full h-28 p-4 border border-border rounded-lg bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
+        />
+
+        {/* Mode toggle + controls */}
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <label className="block text-control text-textDim mb-2">Mode</label>
+            <div className="flex rounded-lg border border-border overflow-hidden">
+              <button
+                onClick={() => handleModeChange('figlet')}
+                className={`px-4 py-2 text-control font-medium transition-colors ${
+                  mode === 'figlet'
+                    ? 'bg-primary text-primaryText'
+                    : 'bg-input text-textDim hover:bg-surfaceHover'
+                }`}
+              >
+                FIGlet
+              </button>
+              <button
+                onClick={() => handleModeChange('pixel')}
+                className={`px-4 py-2 text-control font-medium transition-colors border-l border-border ${
+                  mode === 'pixel'
+                    ? 'bg-primary text-primaryText'
+                    : 'bg-input text-textDim hover:bg-surfaceHover'
+                }`}
+              >
+                Pixel
+              </button>
+            </div>
           </div>
+
+          {mode === 'figlet' && (
+            <div>
+              <label className="block text-control text-textDim mb-2">Width</label>
+              <input
+                type="number"
+                value={width}
+                onChange={(e) => setWidth(Number(e.target.value))}
+                min={20}
+                max={500}
+                className="w-20 p-2 border border-border rounded-lg bg-input text-text text-control focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent"
+              />
+            </div>
+          )}
+
+          {mode === 'pixel' && (
+            <>
+              <div>
+                <label className="block text-control text-textDim mb-2">Block size</label>
+                <select
+                  value={pixelSize}
+                  onChange={(e) => setPixelSize(Number(e.target.value))}
+                  className="p-2 border border-border rounded-lg bg-input text-text text-control focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent"
+                >
+                  {PIXEL_SIZE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-control text-textDim mb-2">Style</label>
+                <select
+                  value={charSetKey}
+                  onChange={(e) => setCharSetKey(e.target.value)}
+                  className="p-2 border border-border rounded-lg bg-input text-text text-control focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent"
+                >
+                  {Object.keys(PIXEL_CHAR_SETS).map((key) => (
+                    <option key={key} value={key}>{key}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Empty state */}
         {!hasResults && (
           <div className="text-center py-16 text-textDim">
-            <p className="text-body">Type something above to see all font variations</p>
+            <p className="text-body">
+              {mode === 'figlet'
+                ? 'Type something above to see all font variations'
+                : 'Type something above to generate pixel block art'}
+            </p>
           </div>
         )}
 
-        {/* Font gallery grid */}
-        {hasResults && (
+        {/* FIGlet gallery */}
+        {mode === 'figlet' && hasResults && (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {FONTS.map((font) => {
-              const output = results[font];
+              const output = figletResults[font];
               if (!output) return null;
               return (
                 <div
@@ -183,6 +345,23 @@ export default function BannerContent() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Pixel output */}
+        {mode === 'pixel' && pixelOutput && (
+          <div className="border border-border rounded-lg overflow-hidden bg-surface">
+            <div className="px-4 py-2.5 border-b border-border flex justify-between items-center">
+              <h3 className="text-body-emphasis text-text font-medium">
+                Pixel Block — {charSetKey}
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => handleCopy(pixelOutput)}>
+                Copy
+              </Button>
+            </div>
+            <pre className="p-4 font-mono text-text whitespace-pre overflow-x-auto bg-input max-h-[600px] overflow-y-auto leading-[1.1] tracking-[0]">
+              {pixelOutput}
+            </pre>
           </div>
         )}
       </main>
