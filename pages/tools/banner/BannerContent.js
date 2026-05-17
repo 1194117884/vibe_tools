@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import figlet from 'figlet';
 import { Button } from '../../../components/ui/button';
 
@@ -96,6 +96,15 @@ export default function BannerContent() {
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
   const debounceRef = useRef(null);
+  const fontRef = useRef(font);
+  const widthRef = useRef(width);
+  fontRef.current = font;
+  widthRef.current = width;
+
+  const safeRender = useCallback((text, f, w) => {
+    const clamped = Math.max(20, Math.min(500, Number(w) || 80));
+    return renderBanner(text, f, clamped);
+  }, []);
 
   // Debounced render on input change (300ms)
   useEffect(() => {
@@ -109,7 +118,7 @@ export default function BannerContent() {
 
     debounceRef.current = setTimeout(() => {
       try {
-        setOutput(renderBanner(input, font, width));
+        setOutput(safeRender(input, fontRef.current, widthRef.current));
         setError('');
       } catch (e) {
         setError('Rendering error: ' + e.message);
@@ -120,7 +129,7 @@ export default function BannerContent() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [input]);
+  }, [input, safeRender]);
 
   // Immediate re-render on font or width change
   useEffect(() => {
@@ -131,16 +140,16 @@ export default function BannerContent() {
     }
 
     try {
-      setOutput(renderBanner(input, font, width));
+      setOutput(safeRender(input, font, width));
       setError('');
     } catch (e) {
       setError('Rendering error: ' + e.message);
       setOutput('');
     }
-  }, [font, width]);
+  }, [font, width, input, safeRender]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(output);
+    navigator.clipboard.writeText(output).catch(() => {});
   };
 
   return (
@@ -196,10 +205,10 @@ export default function BannerContent() {
             </div>
             <Button
               variant="outline"
+              disabled={!input.trim()}
               onClick={() => {
-                if (!input.trim()) return;
                 try {
-                  setOutput(renderBanner(input, font, width));
+                  setOutput(safeRender(input, font, width));
                   setError('');
                 } catch (e) {
                   setError('Rendering error: ' + e.message);
