@@ -141,7 +141,6 @@ export default function BannerContent() {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(output);
-    alert('Copied to clipboard!');
   };
 
   return (
@@ -195,6 +194,21 @@ export default function BannerContent() {
                 className="w-full p-2.5 border border-border rounded-lg bg-input text-text text-control focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent"
               />
             </div>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (!input.trim()) return;
+                try {
+                  setOutput(renderBanner(input, font, width));
+                  setError('');
+                } catch (e) {
+                  setError('Rendering error: ' + e.message);
+                  setOutput('');
+                }
+              }}
+            >
+              Refresh
+            </Button>
           </div>
 
           {/* Error display */}
