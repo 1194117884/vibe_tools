@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "figlet": "^1.11.0",
     "heic2any": "^0.0.4",
     "highlight.js": "^11.11.1",
     "marked": "^12.0.0",
