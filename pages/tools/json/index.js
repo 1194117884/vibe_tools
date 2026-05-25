@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import Head from 'next/head';
 import { Button } from '../../../components/ui/button';
 
@@ -96,7 +96,13 @@ function JsonNode({ name, value, depth, maxDepth, isLast }) {
 }
 
 export default function JsonTool() {
-  const [input, setInput] = useState('');
+  const textareaRef = useRef(null);
+  const getInput = () => textareaRef.current?.value || '';
+  const setTextareaValue = (val) => {
+    if (textareaRef.current) textareaRef.current.value = val;
+  };
+
+  const [parsedData, setParsedData] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [formatted, setFormatted] = useState(true);
@@ -108,25 +114,18 @@ export default function JsonTool() {
   const [queryError, setQueryError] = useState('');
   const [queryRunning, setQueryRunning] = useState(false);
 
-  const parsedData = useMemo(() => {
-    if (!input.trim() || !showView) return null;
-    try {
-      return JSON.parse(input);
-    } catch {
-      return null;
-    }
-  }, [input, showView]);
-
   const showSuccess = (msg) => {
     setSuccess(msg);
     setTimeout(() => setSuccess(''), 2000);
   };
 
   const parseAndApply = (mode) => {
-    if (!input.trim()) return;
+    const value = getInput();
+    if (!value.trim()) return;
     try {
-      const parsed = JSON.parse(input);
-      setInput(JSON.stringify(parsed, null, mode === 'format' ? 2 : 0));
+      const parsed = JSON.parse(value);
+      setTextareaValue(JSON.stringify(parsed, null, mode === 'format' ? 2 : 0));
+      setParsedData(parsed);
       setFormatted(mode === 'format');
       setError('');
       setShowView(true);
@@ -145,9 +144,10 @@ export default function JsonTool() {
   };
 
   const handleValidate = () => {
-    if (!input.trim()) return;
+    const value = getInput();
+    if (!value.trim()) return;
     try {
-      JSON.parse(input);
+      JSON.parse(value);
       setError('');
       showSuccess('Valid JSON');
     } catch (e) {
@@ -156,30 +156,32 @@ export default function JsonTool() {
   };
 
   const handleCopy = () => {
-    if (!input.trim()) return;
-    navigator.clipboard.writeText(input);
+    const value = getInput();
+    if (!value.trim()) return;
+    navigator.clipboard.writeText(value);
     showSuccess('Copied to clipboard!');
   };
 
   const handleClear = () => {
-    setInput('');
+    setTextareaValue('');
+    setParsedData(null);
     setError('');
     setSuccess('');
     setShowView(false);
   };
 
   const handleRunQuery = useCallback(async () => {
-    if (!query.trim() || !input.trim()) return;
+    const value = getInput();
+    if (!query.trim() || !value.trim()) return;
     setQueryRunning(true);
     setQueryError('');
     setQueryResult(null);
     try {
-      const parsed = JSON.parse(input);
       const jq = await getJq();
-      const result = jq.json(parsed, query.trim());
+      const result = jq.raw(value, query.trim());
       setQueryResult(result);
     } catch (e) {
-      if (e.message?.includes('JSON')) {
+      if (e.message?.includes('JSON') || e.stderr?.includes('parse error')) {
         setQueryError('Invalid JSON input');
       } else {
         setQueryError(e.message || String(e));
@@ -187,7 +189,7 @@ export default function JsonTool() {
     } finally {
       setQueryRunning(false);
     }
-  }, [query, input]);
+  }, [query]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -218,8 +220,8 @@ export default function JsonTool() {
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
           <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            ref={textareaRef}
+            defaultValue=""
             placeholder='Paste your JSON here...'
             wrap="off"
             className="w-full h-[400px] p-4 border border-border rounded bg-input text-text placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring focus:border-transparent resize-y font-mono text-control transition-colors duration-150 whitespace-pre overflow-x-auto"
@@ -257,13 +259,11 @@ export default function JsonTool() {
               <div className="p-4 bg-input">
                 {queryError ? (
                   <div className="text-error text-control">{queryError}</div>
-                ) : queryResult === null || queryResult === undefined ? (
+                ) : queryResult == null || queryResult === '' ? (
                   <div className="text-textMuted text-control">No results</div>
                 ) : (
                   <pre className="font-mono text-control text-text whitespace-pre overflow-x-auto">
-                    {typeof queryResult === 'string'
-                      ? queryResult
-                      : JSON.stringify(queryResult, null, 2)}
+                    {queryResult}
                   </pre>
                 )}
               </div>
@@ -323,7 +323,7 @@ export default function JsonTool() {
               <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
                 <h3 className="text-body-emphasis text-text">Tree View</h3>
                 <button
-                  onClick={() => setShowView(false)}
+                  onClick={() => { setShowView(false); setParsedData(null); }}
                   className="text-micro text-textMuted hover:text-text transition-colors"
                 >
                   Hide

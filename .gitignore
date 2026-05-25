@@ -1,5 +1,7 @@
 node_modules/
 build/
+.playwright-mcp/
+.playwright-cli/
 dist/
 package-lock.json
 .env
@@ -10,4 +12,5 @@ package-lock.json
 .next/
 .turbo/
 .vercel
+*.png
 .claude/

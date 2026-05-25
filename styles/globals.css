@@ -23,6 +23,8 @@
     --focus-ring: #0071e3;
     --error: #ff3b30;
     --errorBg: #fff2f0;
+    --success: #34c759;
+    --successBg: #f0fff4;
   }
 
   .dark {
@@ -45,6 +47,8 @@
     --focus-ring: #2997ff;
     --error: #ff453a;
     --errorBg: #3a1a1a;
+    --success: #30d158;
+    --successBg: #1a2e1a;
   }
 }
 

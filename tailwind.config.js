@@ -32,6 +32,8 @@ module.exports = {
         'focus-ring': 'var(--focus-ring)',
         error: 'var(--error)',
         errorBg: 'var(--errorBg)',
+        success: 'var(--success)',
+        successBg: 'var(--successBg)',
       },
       borderRadius: {
         sm: '5px',
