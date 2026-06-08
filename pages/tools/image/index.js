@@ -39,10 +39,12 @@ export default function ImageTool() {
 
   const convertFile = async (file) => {
     let imageDataUrl;
+    let needsRevoke = false;
     if (isHeicFile(file)) {
       const heic2any = (await import('heic2any')).default;
       const pngBlob = await heic2any({ blob: file, toType: 'image/png' });
       imageDataUrl = URL.createObjectURL(pngBlob instanceof Blob ? pngBlob : pngBlob[0]);
+      needsRevoke = true;
     } else {
       imageDataUrl = await new Promise((resolve) => {
         const reader = new FileReader();
@@ -54,6 +56,7 @@ export default function ImageTool() {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
+        if (needsRevoke) URL.revokeObjectURL(imageDataUrl);
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = img.width;
@@ -64,7 +67,10 @@ export default function ImageTool() {
         const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
         resolve(dataURL);
       };
-      img.onerror = () => reject(new Error('Failed to load image for conversion'));
+      img.onerror = () => {
+        if (needsRevoke) URL.revokeObjectURL(imageDataUrl);
+        reject(new Error('Failed to load image for conversion'));
+      };
       img.src = imageDataUrl;
     });
   };
