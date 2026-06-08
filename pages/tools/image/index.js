@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function ImageTool() {
-  const [inputImage, setInputImage] = useState(null);
-  const [outputImage, setOutputImage] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [queueStatus, setQueueStatus] = useState({});
   const [selectedFormat, setSelectedFormat] = useState('jpeg');
   const [quality, setQuality] = useState(0.8);
   const [error, setError] = useState('');
-  const [heicPreviewUrl, setHeicPreviewUrl] = useState(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
-  const [converting, setConverting] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(-1);
+  const [isConverting, setIsConverting] = useState(false);
   const fileInputRef = useRef(null);
 
   const isHeicFile = (file) => {
@@ -19,56 +18,40 @@ export default function ImageTool() {
     return ext === 'heic' || ext === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (file && (file.type.startsWith('image/') || isHeicFile(file))) {
-      setInputImage(file);
-      setError('');
-      setOutputImage(null);
-
-      if (isHeicFile(file)) {
-        setLoadingPreview(true);
-        try {
-          const heic2any = (await import('heic2any')).default;
-          const pngBlob = await heic2any({ blob: file, toType: 'image/png' });
-          const blob = pngBlob instanceof Blob ? pngBlob : pngBlob[0];
-          if (heicPreviewUrl) URL.revokeObjectURL(heicPreviewUrl);
-          setHeicPreviewUrl(URL.createObjectURL(blob));
-        } catch {
-          setHeicPreviewUrl(null);
-        } finally {
-          setLoadingPreview(false);
-        }
-      } else {
-        if (heicPreviewUrl) URL.revokeObjectURL(heicPreviewUrl);
-        setHeicPreviewUrl(null);
-      }
-    } else {
-      setError('Please select a valid image file');
-    }
-  };
-
-  const handleConvert = async () => {
-    if (!inputImage) {
-      setError('Please select an image first');
+  const handleFileChange = (e) => {
+    const selected = Array.from(e.target.files).filter(
+      (f) => f.type.startsWith('image/') || isHeicFile(f)
+    );
+    if (selected.length === 0) {
+      setError('Please select valid image files');
       return;
     }
-    setConverting(true);
     setError('');
-    try {
-      let imageDataUrl;
-      if (isHeicFile(inputImage)) {
-        const heic2any = (await import('heic2any')).default;
-        const pngBlob = await heic2any({ blob: inputImage, toType: 'image/png' });
-        imageDataUrl = URL.createObjectURL(pngBlob instanceof Blob ? pngBlob : pngBlob[0]);
-      } else {
-        imageDataUrl = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(inputImage);
-        });
-      }
+    setFiles(selected);
+    const initial = {};
+    selected.forEach((f) => {
+      initial[f.name] = { status: 'pending' };
+    });
+    setQueueStatus(initial);
+    setCurrentIndex(-1);
+    setIsConverting(false);
+  };
 
+  const convertFile = async (file) => {
+    let imageDataUrl;
+    if (isHeicFile(file)) {
+      const heic2any = (await import('heic2any')).default;
+      const pngBlob = await heic2any({ blob: file, toType: 'image/png' });
+      imageDataUrl = URL.createObjectURL(pngBlob instanceof Blob ? pngBlob : pngBlob[0]);
+    } else {
+      imageDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -79,18 +62,41 @@ export default function ImageTool() {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
         const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
-        setOutputImage(dataURL);
-        setConverting(false);
+        resolve(dataURL);
       };
-      img.onerror = () => {
-        setError('Failed to load image for conversion');
-        setConverting(false);
-      };
+      img.onerror = () => reject(new Error('Failed to load image for conversion'));
       img.src = imageDataUrl;
-    } catch (e) {
-      setError('Conversion failed: ' + e.message);
-      setConverting(false);
+    });
+  };
+
+  const handleStartConvert = async () => {
+    if (files.length === 0) {
+      setError('Please select images first');
+      return;
     }
+    setIsConverting(true);
+    setError('');
+    for (let i = 0; i < files.length; i++) {
+      setCurrentIndex(i);
+      setQueueStatus((prev) => ({
+        ...prev,
+        [files[i].name]: { status: 'converting' },
+      }));
+      try {
+        const output = await convertFile(files[i]);
+        setQueueStatus((prev) => ({
+          ...prev,
+          [files[i].name]: { status: 'done', output },
+        }));
+      } catch (e) {
+        setQueueStatus((prev) => ({
+          ...prev,
+          [files[i].name]: { status: 'error', error: e.message },
+        }));
+      }
+    }
+    setIsConverting(false);
+    setCurrentIndex(-1);
   };
 
   const handleDownload = () => {
