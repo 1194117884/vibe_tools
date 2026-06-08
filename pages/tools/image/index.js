@@ -1,6 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import { Button } from '../../../components/ui/button';
 
 export default function ImageTool() {
@@ -12,6 +11,8 @@ export default function ImageTool() {
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isConverting, setIsConverting] = useState(false);
   const fileInputRef = useRef(null);
+  const outputsRef = useRef({});
+  const [renderTick, setRenderTick] = useState(0);
 
   const isHeicFile = (file) => {
     const ext = file.name.split('.').pop().toLowerCase();
@@ -64,7 +65,7 @@ export default function ImageTool() {
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL(`image/${selectedFormat}`, parseFloat(quality));
+        const dataURL = canvas.toDataURL(`image/${selectedFormat}`, quality);
         resolve(dataURL);
       };
       img.onerror = () => {
@@ -90,10 +91,12 @@ export default function ImageTool() {
       }));
       try {
         const output = await convertFile(files[i]);
+        outputsRef.current[files[i].name] = output;
         setQueueStatus((prev) => ({
           ...prev,
-          [files[i].name]: { status: 'done', output },
+          [files[i].name]: { status: 'done' },
         }));
+        setRenderTick((v) => v + 1);
       } catch (e) {
         setQueueStatus((prev) => ({
           ...prev,
@@ -105,7 +108,9 @@ export default function ImageTool() {
     setCurrentIndex(-1);
   };
 
-  const handleDownload = (fileName, dataURL) => {
+  const handleDownload = (fileName) => {
+    const dataURL = outputsRef.current[fileName];
+    if (!dataURL) return;
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = fileName.replace(/\.[^.]+$/, '') + '.' + selectedFormat;
@@ -176,7 +181,7 @@ export default function ImageTool() {
                 max="1"
                 step="0.1"
                 value={quality}
-                onChange={(e) => setQuality(e.target.value)}
+                onChange={(e) => setQuality(parseFloat(e.target.value))}
                 className="w-full accent-primary"
               />
             </div>
@@ -205,8 +210,8 @@ export default function ImageTool() {
           )}
 
           {/* Summary after conversion */}
-          {!isConverting && totalFiles > 0 && doneCount + errorCount === totalFiles && (
-            <div className="text-control text-textMuted">
+          {!isConverting && totalFiles > 0 && doneCount + errorCount === Object.keys(queueStatus).length && (
+            <div className="text-control text-textMuted" role="status" aria-live="polite">
               {doneCount} converted, {errorCount} failed
             </div>
           )}
@@ -218,27 +223,27 @@ export default function ImageTool() {
                 <h3 className="text-body-emphasis text-text">Queue</h3>
               </div>
               <div className="divide-y divide-border">
-                {files.map((file, i) => {
+                {files.map((file, idx) => {
                   const s = queueStatus[file.name] || { status: 'pending' };
                   return (
-                    <div key={file.name} className="px-4 py-3 flex items-center justify-between bg-input">
+                    <div key={file.name + '-' + idx} className="px-4 py-3 flex items-center justify-between bg-input">
                       <div className="flex items-center gap-3 min-w-0">
                         <span className="text-control text-text truncate">{file.name}</span>
-                        <span className="text-micro flex-shrink-0">
-                          {s.status === 'pending' && <span className="text-textMuted">⏳ Pending</span>}
-                          {s.status === 'converting' && <span className="text-primary">🔄 Converting</span>}
-                          {s.status === 'done' && <span className="text-green-600 dark:text-green-400">✅ Done</span>}
-                          {s.status === 'error' && <span className="text-error">❌ Failed</span>}
+                        <span className="text-micro flex-shrink-0" role="status">
+                          {s.status === 'pending' && <span className="text-textMuted" aria-label="Pending">⏳ Pending</span>}
+                          {s.status === 'converting' && <span className="text-primary" aria-label="Converting">🔄 Converting</span>}
+                          {s.status === 'done' && <span className="text-green-600 dark:text-green-400" aria-label="Done">✅ Done</span>}
+                          {s.status === 'error' && <span className="text-error" aria-label="Failed">❌ Failed</span>}
                         </span>
                       </div>
                       <div className="flex-shrink-0 ml-3">
                         {s.status === 'done' && (
-                          <Button variant="ghost" size="sm" onClick={() => handleDownload(file.name, s.output)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleDownload(file.name)}>
                             Download
                           </Button>
                         )}
                         {s.status === 'error' && (
-                          <span className="text-micro text-textDim" title={s.error}>Error</span>
+                          <span className="text-micro text-error" aria-label={s.error}>Error: {s.error}</span>
                         )}
                       </div>
                     </div>
