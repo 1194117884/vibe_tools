@@ -105,13 +105,16 @@ export default function ImageTool() {
     setCurrentIndex(-1);
   };
 
-  const handleDownload = () => {
-    if (!outputImage) return;
+  const handleDownload = (fileName, dataURL) => {
     const link = document.createElement('a');
-    link.href = outputImage;
-    link.download = `converted_image.${selectedFormat}`;
+    link.href = dataURL;
+    link.download = fileName.replace(/\.[^.]+$/, '') + '.' + selectedFormat;
     link.click();
   };
+
+  const totalFiles = files.length;
+  const doneCount = Object.values(queueStatus).filter((s) => s.status === 'done').length;
+  const errorCount = Object.values(queueStatus).filter((s) => s.status === 'error').length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,41 +125,36 @@ export default function ImageTool() {
       <header className="border-b border-border py-10">
         <div className="max-w-4xl mx-auto px-6">
           <h1 className="font-display text-product text-text mb-1 tracking-tight">Image Converter</h1>
-          <p className="text-body text-textMuted">Convert between HEIC, PNG, JPG, and WebP formats</p>
+          <p className="text-body text-textMuted">Convert between HEIC, PNG, JPG, and WebP formats — now with batch support</p>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-8">
         <div className="space-y-6">
+          {/* File Selection */}
           <div className="border-2 border-dashed border-border rounded-lg p-8 text-center bg-surface">
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               accept="image/*,.heic,.heif"
+              multiple
               className="hidden"
+              disabled={isConverting}
             />
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-              Select Image
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isConverting}
+            >
+              {totalFiles > 0 ? `${totalFiles} file${totalFiles > 1 ? 's' : ''} selected` : 'Select Images'}
             </Button>
-            {inputImage && (
-              <div className="mt-4">
-                <p className="text-control text-textMuted">{inputImage.name}</p>
-                {loadingPreview ? (
-                  <div className="mt-2 flex items-center justify-center gap-2 text-textMuted">
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    <span className="text-control">Decoding HEIC preview...</span>
-                  </div>
-                ) : (
-                  <img src={heicPreviewUrl || URL.createObjectURL(inputImage)} alt="Selected" className="mt-2 max-h-40 mx-auto rounded" />
-                )}
-              </div>
+            {totalFiles > 0 && !isConverting && (
+              <p className="text-control text-textMuted mt-2">Click again to replace selection</p>
             )}
           </div>
 
+          {/* Shared Configuration */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-control font-medium text-text mb-2">Output Format</label>
@@ -184,11 +182,16 @@ export default function ImageTool() {
             </div>
           </div>
 
+          {/* Action Button */}
           <div className="flex gap-2 items-center">
-            <Button onClick={handleConvert} disabled={converting}>
-              {converting ? 'Converting...' : 'Convert Image'}
+            <Button onClick={handleStartConvert} disabled={isConverting || totalFiles === 0}>
+              {isConverting
+                ? `Converting ${currentIndex + 1}/${totalFiles}`
+                : totalFiles > 0
+                ? 'Start Convert'
+                : 'Select Images to Convert'}
             </Button>
-            {converting && (
+            {isConverting && (
               <svg className="animate-spin h-5 w-5 text-primary" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -196,18 +199,51 @@ export default function ImageTool() {
             )}
           </div>
 
+          {/* Error */}
           {error && (
             <div className="text-error text-control p-3 bg-errorBg rounded">{error}</div>
           )}
 
-          {outputImage && (
+          {/* Summary after conversion */}
+          {!isConverting && totalFiles > 0 && doneCount + errorCount === totalFiles && (
+            <div className="text-control text-textMuted">
+              {doneCount} converted, {errorCount} failed
+            </div>
+          )}
+
+          {/* Queue List */}
+          {totalFiles > 0 && (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="bg-surface px-4 py-2.5 border-b border-border flex justify-between items-center">
-                <h3 className="text-body-emphasis text-text">Converted Image</h3>
-                <Button variant="ghost" size="sm" onClick={handleDownload}>Download</Button>
+              <div className="bg-surface px-4 py-2.5 border-b border-border">
+                <h3 className="text-body-emphasis text-text">Queue</h3>
               </div>
-              <div className="p-4 flex justify-center bg-input">
-                <img src={outputImage} alt="Converted" className="max-h-60 rounded" />
+              <div className="divide-y divide-border">
+                {files.map((file, i) => {
+                  const s = queueStatus[file.name] || { status: 'pending' };
+                  return (
+                    <div key={file.name} className="px-4 py-3 flex items-center justify-between bg-input">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span className="text-control text-text truncate">{file.name}</span>
+                        <span className="text-micro flex-shrink-0">
+                          {s.status === 'pending' && <span className="text-textMuted">⏳ Pending</span>}
+                          {s.status === 'converting' && <span className="text-primary">🔄 Converting</span>}
+                          {s.status === 'done' && <span className="text-green-600 dark:text-green-400">✅ Done</span>}
+                          {s.status === 'error' && <span className="text-error">❌ Failed</span>}
+                        </span>
+                      </div>
+                      <div className="flex-shrink-0 ml-3">
+                        {s.status === 'done' && (
+                          <Button variant="ghost" size="sm" onClick={() => handleDownload(file.name, s.output)}>
+                            Download
+                          </Button>
+                        )}
+                        {s.status === 'error' && (
+                          <span className="text-micro text-textDim" title={s.error}>Error</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
