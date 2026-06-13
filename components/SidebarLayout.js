@@ -2,6 +2,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ThemeToggle from './ThemeToggle';
+import HiddenTrigger from './HiddenTrigger';
+import AuthModal from './AuthModal';
+import { useAuth } from '../contexts/AuthContext';
 
 const tools = [
   { id: 'json', name: 'JSON Formatter', icon: '{ }' },
@@ -20,11 +23,29 @@ const tools = [
   { id: 'morse', name: 'Morse Code', icon: '🌳' },
   { id: 'banner', name: 'Banner Text', icon: '🔤' },
   { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
+  { id: 'upload', name: 'Upload', icon: '☁️' },
 ];
 
 export default function SidebarLayout({ children }) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, verify } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const handleVerify = async (key) => {
+    setAuthLoading(true);
+    setAuthError('');
+    const err = await verify(key);
+    if (err) {
+      setAuthError(err);
+    } else {
+      setShowAuthModal(false);
+      setAuthError('');
+    }
+    setAuthLoading(false);
+  };
 
   const isActive = (toolId) => router.pathname === `/tools/${toolId}`;
   const isHome = router.pathname === '/';
@@ -114,6 +135,9 @@ export default function SidebarLayout({ children }) {
               {/* Mobile sidebar footer */}
               <div className="flex items-center justify-between px-5 py-3 border-t border-border">
                 <span className="text-micro text-textDim">Theme</span>
+                <HiddenTrigger onActivated={() => setShowAuthModal(true)}>
+                  <span className="text-micro text-textDim select-none cursor-default">·</span>
+                </HiddenTrigger>
                 <ThemeToggle />
               </div>
             </div>
@@ -168,6 +192,9 @@ export default function SidebarLayout({ children }) {
           {/* Sidebar footer */}
           <div className="flex items-center justify-between px-5 py-3 border-t border-border">
             <span className="text-micro text-textDim">Appearance</span>
+            <HiddenTrigger onActivated={() => setShowAuthModal(true)}>
+              <span className="text-micro text-textDim select-none cursor-default">·</span>
+            </HiddenTrigger>
             <ThemeToggle />
           </div>
         </div>
@@ -177,6 +204,14 @@ export default function SidebarLayout({ children }) {
       <div className="flex-1 md:ml-64 pt-12 md:pt-0 min-h-screen flex flex-col">
         {children}
       </div>
+
+      <AuthModal
+        open={showAuthModal}
+        onVerify={handleVerify}
+        onClose={() => setShowAuthModal(false)}
+        error={authError}
+        loading={authLoading}
+      />
     </div>
   );
 }
