@@ -1,7 +1,9 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../../../contexts/AuthContext';
 import AuthModal from '../../../components/AuthModal';
+
+const MAX_CONCURRENT = 3;
 
 export default function UploadTool() {
   const { isAuthenticated, verify, token } = useAuth();
@@ -10,6 +12,7 @@ export default function UploadTool() {
   const [authLoading, setAuthLoading] = useState(false);
   const [files, setFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [queueActive, setQueueActive] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleVerify = useCallback(async (key) => {
@@ -39,6 +42,12 @@ export default function UploadTool() {
 
   const removeFile = useCallback((id) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  const retryFile = useCallback((id) => {
+    setFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, status: 'pending', error: null, progress: 0 } : f))
+    );
   }, []);
 
   const handleDrop = useCallback((e) => {
@@ -128,6 +137,33 @@ export default function UploadTool() {
     }
   }, [token]);
 
+  // Auto-queue: when uploads finish and more are pending, start the next batch
+  useEffect(() => {
+    if (!queueActive) return;
+
+    const pending = files.filter((f) => f.status === 'pending');
+    const uploading = files.filter((f) => f.status === 'uploading');
+
+    if (pending.length === 0 && uploading.length === 0) {
+      setQueueActive(false);
+      return;
+    }
+
+    if (pending.length > 0 && uploading.length < MAX_CONCURRENT) {
+      const slots = MAX_CONCURRENT - uploading.length;
+      const nextBatch = pending.slice(0, slots);
+      nextBatch.forEach((f) => uploadFile(f));
+    }
+  }, [files, queueActive, uploadFile]);
+
+  const startQueue = useCallback(() => {
+    setQueueActive(true);
+    const pending = files.filter((f) => f.status === 'pending');
+    const uploading = files.filter((f) => f.status === 'uploading');
+    const slots = MAX_CONCURRENT - uploading.length;
+    pending.slice(0, slots).forEach((f) => uploadFile(f));
+  }, [files, uploadFile]);
+
   const copyToClipboard = useCallback(async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -178,6 +214,11 @@ export default function UploadTool() {
   }
 
   // --- Unlocked state ---
+  const pendingCount = files.filter((f) => f.status === 'pending').length;
+  const uploadingCount = files.filter((f) => f.status === 'uploading').length;
+  const errorCount = files.filter((f) => f.status === 'error').length;
+  const hasPending = pendingCount > 0 && !queueActive;
+
   return (
     <>
       <Head>
@@ -223,6 +264,17 @@ export default function UploadTool() {
           className="hidden"
         />
 
+        {/* Queue status banner */}
+        {queueActive && (uploadingCount > 0 || pendingCount > 0) && (
+          <div className="mt-4 px-4 py-2 bg-[#0071e3]/10 rounded-xl text-center">
+            <span className="text-[14px] text-[#0071e3] font-medium">
+              上传中 {uploadingCount} 个
+              {pendingCount > 0 && ` · 等待中 ${pendingCount} 个`}
+            </span>
+          </div>
+        )}
+
+        {/* File list */}
         {files.length > 0 && (
           <div className="mt-6 space-y-2">
             {files.map((f) => (
@@ -239,16 +291,30 @@ export default function UploadTool() {
                       {(f.file.size / 1024 / 1024).toFixed(1)} MB
                     </span>
                   </div>
-                  <button
-                    onClick={() => removeFile(f.id)}
-                    title="移除文件"
-                    className="text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] shrink-0 ml-2"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                      <line x1="4" y1="4" x2="12" y2="12" />
-                      <line x1="12" y1="4" x2="4" y2="12" />
-                    </svg>
-                  </button>
+                  {(f.status === 'pending' || f.status === 'error') && (
+                    <button
+                      onClick={() => removeFile(f.id)}
+                      title="移除文件"
+                      className="text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] shrink-0 ml-2"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="4" y1="4" x2="12" y2="12" />
+                        <line x1="12" y1="4" x2="4" y2="12" />
+                      </svg>
+                    </button>
+                  )}
+                  {f.status === 'done' && (
+                    <button
+                      onClick={() => removeFile(f.id)}
+                      title="移除文件"
+                      className="text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7] shrink-0 ml-2"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="4" y1="4" x2="12" y2="12" />
+                        <line x1="12" y1="4" x2="4" y2="12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
 
                 {(f.status === 'pending' || f.status === 'uploading') && (
@@ -279,7 +345,15 @@ export default function UploadTool() {
                     </>
                   )}
                   {f.status === 'error' && (
-                    <span className="text-[14px] text-red-500">{f.error}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[14px] text-red-500">{f.error}</span>
+                      <button
+                        onClick={() => retryFile(f.id)}
+                        className="text-[14px] text-[#0071e3] hover:text-[#0066cc] font-medium"
+                      >
+                        重试
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -295,18 +369,32 @@ export default function UploadTool() {
           </div>
         )}
 
-        {files.some((f) => f.status === 'pending') && (
+        {/* Start / Retry All button */}
+        {hasPending && (
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={startQueue}
+              className="px-6 h-11 rounded-full bg-[#0071e3] text-white text-[15px] font-semibold hover:bg-[#0066cc] transition-colors"
+            >
+              开始上传
+            </button>
+          </div>
+        )}
+
+        {/* Retry all failed button */}
+        {!queueActive && errorCount > 0 && !hasPending && (
           <div className="mt-4 flex justify-center">
             <button
               onClick={() => {
-                files
-                  .filter((f) => f.status === 'pending')
-                  .slice(0, 3)
-                  .forEach(uploadFile);
+                setFiles((prev) =>
+                  prev.map((f) =>
+                    f.status === 'error' ? { ...f, status: 'pending', error: null, progress: 0 } : f
+                  )
+                );
               }}
-              className="px-6 h-11 rounded-full bg-[#0071e3] text-white text-[15px] font-semibold hover:bg-[#0066cc] transition-colors"
+              className="px-6 h-11 rounded-full border border-[#0071e3] text-[#0071e3] text-[15px] font-semibold hover:bg-[#0071e3]/10 transition-colors"
             >
-              开始上传（最多同时 3 个）
+              重试全部失败 ({errorCount})
             </button>
           </div>
         )}

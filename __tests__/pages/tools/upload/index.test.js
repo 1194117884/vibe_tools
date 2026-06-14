@@ -102,8 +102,59 @@ describe('UploadTool -- unlocked state', () => {
       dropZone.dispatchEvent(event);
     });
 
-    // After drag over with Files, the border should change
-    // Check for blue border class
     expect(dropZone.className).toContain('border-[#0071e3]');
+  });
+
+  test('shows start upload button when files are pending', async () => {
+    const user = userEvent.setup();
+    renderWithAuth(true);
+
+    const file = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
+    const input = document.querySelector('input[type="file"]');
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText(/开始上传/i)).toBeInTheDocument();
+    });
+  });
+
+  test('shows retry button and retry-all button when files fail', async () => {
+    const user = userEvent.setup();
+    // Mock fetch to simulate a presign failure
+    global.fetch = jest.fn().mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: '上传失败' }),
+    });
+
+    renderWithAuth(true);
+
+    const file = new File(['dummy'], 'fail.pdf', { type: 'application/pdf' });
+    const input = document.querySelector('input[type="file"]');
+    await user.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText('fail.pdf')).toBeInTheDocument();
+    });
+
+    // Click "开始上传" to trigger the upload attempt
+    const startBtn = screen.getByText('开始上传');
+    await user.click(startBtn);
+
+    // Wait for the error state to appear
+    await waitFor(() => {
+      expect(screen.getByText('上传失败')).toBeInTheDocument();
+    });
+
+    // Retry button should be visible
+    expect(screen.getByText('重试')).toBeInTheDocument();
+
+    // Click retry — should reset to pending
+    await user.click(screen.getByText('重试'));
+
+    await waitFor(() => {
+      expect(screen.getByText('等待上传')).toBeInTheDocument();
+    });
+
+    global.fetch.mockRestore();
   });
 });
