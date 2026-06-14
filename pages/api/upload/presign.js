@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     const validation = validateFile(fileName, fileSize, contentType);
     if (!validation.valid) {
       const statusMap = {
-        'File exceeds 50MB limit': 413,
+        'File exceeds 100MB limit': 413,
         'Unsupported file type': 415,
         'File is empty': 400,
         'Empty filename': 400,

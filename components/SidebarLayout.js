@@ -23,7 +23,6 @@ const tools = [
   { id: 'morse', name: 'Morse Code', icon: '🌳' },
   { id: 'banner', name: 'Banner Text', icon: '🔤' },
   { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
-  { id: 'upload', name: 'Upload', icon: '☁️' },
 ];
 
 export default function SidebarLayout({ children }) {
@@ -43,6 +42,7 @@ export default function SidebarLayout({ children }) {
     } else {
       setShowAuthModal(false);
       setAuthError('');
+      router.push('/tools/upload');
     }
     setAuthLoading(false);
   };

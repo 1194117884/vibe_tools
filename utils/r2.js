@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const ALLOWED_TYPES = [
   'image/',
@@ -61,7 +61,7 @@ export function validateFile(fileName, fileSize, contentType) {
   }
 
   if (fileSize > MAX_FILE_SIZE) {
-    return { valid: false, error: 'File exceeds 50MB limit' };
+    return { valid: false, error: 'File exceeds 100MB limit' };
   }
 
   if (!contentType) {

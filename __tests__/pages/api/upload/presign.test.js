@@ -86,11 +86,11 @@ describe('POST /api/upload/presign', () => {
     const { req, res } = createMocks({
       method: 'POST',
       headers: { authorization: `Bearer ${token}` },
-      body: { fileName: 'big.zip', fileSize: 52428801, contentType: 'application/zip' },
+      body: { fileName: 'big.zip', fileSize: 104857601, contentType: 'application/zip' },
     });
     await handler(req, res);
     expect(res._getStatusCode()).toBe(413);
-    expect(res._getJSONData().error).toBe('File exceeds 50MB limit');
+    expect(res._getJSONData().error).toBe('File exceeds 100MB limit');
   });
 
   test('returns 415 for unsupported content type', async () => {

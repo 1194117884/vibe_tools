@@ -87,10 +87,10 @@ describe('validateFile', () => {
     expect(result.error).toBe('File is empty');
   });
 
-  test('rejects file over 50MB', () => {
-    const result = validateFile('big.bin', 52428801, 'application/zip');
+  test('rejects file over 100MB', () => {
+    const result = validateFile('big.bin', 104857601, 'application/zip');
     expect(result.valid).toBe(false);
-    expect(result.error).toBe('File exceeds 50MB limit');
+    expect(result.error).toBe('File exceeds 100MB limit');
   });
 
   test('rejects disallowed content type', () => {
