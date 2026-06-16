@@ -911,10 +911,10 @@ export default function MorseTool() {
                   max="40"
                   value={wpm}
                   onChange={(e) => setWpm(Number(e.target.value))}
-                  className="w-28 h-1.5 bg-border rounded-full appearance-none cursor-pointer
+                  className={`w-28 h-1.5 bg-border rounded-full appearance-none cursor-pointer
                       [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
                       [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full
-                      [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
+                      [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer`}
                   style={{ accentColor: 'var(--primary)' }}
                 />
                 <span className="text-control font-mono text-text w-16">{wpm} WPM</span>
@@ -982,9 +982,9 @@ export default function MorseTool() {
                   }}
                   placeholder="Type what you hear..."
                   rows={3}
-                  className="w-full p-3 border border-border rounded bg-input text-text
+                  className={`w-full p-3 border border-border rounded bg-input text-text
                       placeholder:text-textDim focus:outline-none focus:ring-2 focus:ring-focus-ring
-                      focus:border-transparent resize-y font-mono text-control transition-colors duration-150"
+                      focus:border-transparent resize-y font-mono text-control transition-colors duration-150`}
                 />
               </div>
             )}
