@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ThemeToggle from './ThemeToggle';
@@ -6,10 +6,13 @@ import HiddenTrigger from './HiddenTrigger';
 import AuthModal from './AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 
+const PROTECTED_MENU_STORAGE_KEY = 'protected_tools_menu_visible';
+
 const tools = [
   { id: 'json', name: 'JSON Formatter', icon: '{ }' },
   { id: 'base64', name: 'Base64', icon: 'Aa' },
   { id: 'url', name: 'URL Encoder', icon: '🔗' },
+  { id: 'request', name: 'Request Builder', icon: '↔' },
   { id: 'hash', name: 'Hash Generator', icon: '#' },
   { id: 'aes', name: 'AES Encrypt', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', icon: '🔑' },
@@ -25,13 +28,30 @@ const tools = [
   { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
 ];
 
+const protectedTools = [
+  { id: 'upload', name: 'Upload Files', icon: '⬆️' },
+  { id: 'douyin-proxy', name: 'Douyin Proxy', icon: '▶' },
+];
+
 export default function SidebarLayout({ children }) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, verify } = useAuth();
+  const [protectedMenuVisible, setProtectedMenuVisible] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem(PROTECTED_MENU_STORAGE_KEY) === 'true') {
+      setProtectedMenuVisible(true);
+    }
+  }, []);
+
+  const revealProtectedMenu = () => {
+    localStorage.setItem(PROTECTED_MENU_STORAGE_KEY, 'true');
+    setProtectedMenuVisible(true);
+  };
 
   const handleVerify = async (key) => {
     setAuthLoading(true);
@@ -49,6 +69,7 @@ export default function SidebarLayout({ children }) {
 
   const isActive = (toolId) => router.pathname === `/tools/${toolId}`;
   const isHome = router.pathname === '/';
+  const visibleProtectedTools = protectedMenuVisible || isAuthenticated ? protectedTools : [];
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -130,12 +151,33 @@ export default function SidebarLayout({ children }) {
                     <span className="text-control">{tool.name}</span>
                   </Link>
                 ))}
+
+                {visibleProtectedTools.length > 0 && (
+                  <>
+                    <div className="my-2 border-t border-border" />
+                    {visibleProtectedTools.map((tool) => (
+                      <Link
+                        key={tool.id}
+                        href={`/tools/${tool.id}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+                          isActive(tool.id)
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-text hover:bg-surfaceHover'
+                        }`}
+                      >
+                        <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
+                        <span className="text-control">{tool.name}</span>
+                      </Link>
+                    ))}
+                  </>
+                )}
               </nav>
 
               {/* Mobile sidebar footer */}
               <div className="flex items-center justify-between px-5 py-3 border-t border-border">
                 <span className="text-micro text-textDim">Theme</span>
-                <HiddenTrigger onActivated={() => setShowAuthModal(true)}>
+                <HiddenTrigger onActivated={revealProtectedMenu}>
                   <span className="text-micro text-textDim select-none cursor-default">·</span>
                 </HiddenTrigger>
                 <ThemeToggle />
@@ -187,12 +229,32 @@ export default function SidebarLayout({ children }) {
                 <span className="text-control">{tool.name}</span>
               </Link>
             ))}
+
+            {visibleProtectedTools.length > 0 && (
+              <>
+                <div className="my-2 border-t border-border" />
+                {visibleProtectedTools.map((tool) => (
+                  <Link
+                    key={tool.id}
+                    href={`/tools/${tool.id}`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
+                      isActive(tool.id)
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-text hover:bg-surfaceHover'
+                    }`}
+                  >
+                    <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
+                    <span className="text-control">{tool.name}</span>
+                  </Link>
+                ))}
+              </>
+            )}
           </nav>
 
           {/* Sidebar footer */}
           <div className="flex items-center justify-between px-5 py-3 border-t border-border">
             <span className="text-micro text-textDim">Appearance</span>
-            <HiddenTrigger onActivated={() => setShowAuthModal(true)}>
+            <HiddenTrigger onActivated={revealProtectedMenu}>
               <span className="text-micro text-textDim select-none cursor-default">·</span>
             </HiddenTrigger>
             <ThemeToggle />

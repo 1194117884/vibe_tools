@@ -25,8 +25,14 @@ function renderWithProvider() {
   );
 }
 
+function makeToken(payload) {
+  const encode = (value) => btoa(JSON.stringify(value)).replace(/=/g, '');
+  return `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}.signature`;
+}
+
 beforeEach(() => {
   sessionStorage.clear();
+  localStorage.clear();
   jest.restoreAllMocks();
 });
 
@@ -37,9 +43,10 @@ describe('AuthContext', () => {
   });
 
   test('sets isAuthenticated to true after successful verify', async () => {
+    const token = makeToken({ exp: Math.floor(Date.now() / 1000) + 3600 });
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ token: 'test-jwt-token' }),
+      json: async () => ({ token }),
     });
 
     renderWithProvider();
@@ -53,10 +60,11 @@ describe('AuthContext', () => {
     });
   });
 
-  test('stores token in sessionStorage on success', async () => {
+  test('stores token in localStorage on success', async () => {
+    const token = makeToken({ exp: Math.floor(Date.now() / 1000) + 3600 });
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ token: 'test-jwt-token' }),
+      json: async () => ({ token }),
     });
 
     renderWithProvider();
@@ -66,7 +74,7 @@ describe('AuthContext', () => {
     });
 
     await waitFor(() => {
-      expect(sessionStorage.getItem('auth_token')).toBe('test-jwt-token');
+      expect(localStorage.getItem('auth_token')).toBe(token);
     });
   });
 
@@ -129,9 +137,10 @@ describe('AuthContext', () => {
   });
 
   test('clearAuth removes token and sets isAuthenticated to false', async () => {
+    const token = makeToken({ exp: Math.floor(Date.now() / 1000) + 3600 });
     global.fetch = jest.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ token: 'test-jwt-token' }),
+      json: async () => ({ token }),
     });
 
     renderWithProvider();
@@ -151,13 +160,20 @@ describe('AuthContext', () => {
     });
 
     expect(screen.getByTestId('auth-status').textContent).toBe('false');
-    expect(sessionStorage.getItem('auth_token')).toBeNull();
+    expect(localStorage.getItem('auth_token')).toBeNull();
   });
 
-  test('restores auth state from sessionStorage on mount', () => {
-    sessionStorage.setItem('auth_token', 'existing-token');
+  test('restores auth state from localStorage on mount', () => {
+    localStorage.setItem('auth_token', makeToken({ exp: Math.floor(Date.now() / 1000) + 3600 }));
     renderWithProvider();
     expect(screen.getByTestId('auth-status').textContent).toBe('true');
+  });
+
+  test('removes expired token from localStorage on mount', () => {
+    localStorage.setItem('auth_token', makeToken({ exp: Math.floor(Date.now() / 1000) - 1 }));
+    renderWithProvider();
+    expect(screen.getByTestId('auth-status').textContent).toBe('false');
+    expect(localStorage.getItem('auth_token')).toBeNull();
   });
 
   test('handles network error during verify', async () => {

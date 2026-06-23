@@ -13,7 +13,11 @@ jest.mock('next/head', () => {
 
 function renderWithAuth(isAuth = false) {
   if (isAuth) {
-    sessionStorage.setItem('auth_token', 'test-token');
+    const encode = (value) => btoa(JSON.stringify(value)).replace(/=/g, '');
+    const token = `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode({
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    })}.signature`;
+    localStorage.setItem('auth_token', token);
   }
 
   return render(
@@ -25,6 +29,7 @@ function renderWithAuth(isAuth = false) {
 
 beforeEach(() => {
   sessionStorage.clear();
+  localStorage.clear();
 });
 
 describe('UploadTool -- locked state', () => {

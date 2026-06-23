@@ -4,13 +4,33 @@ const AuthContext = createContext(null);
 
 const STORAGE_KEY = 'auth_token';
 
+function isTokenUsable(token) {
+  if (!token || typeof token !== 'string') return false;
+
+  try {
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) return false;
+    const normalizedPayload = payloadPart
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(Math.ceil(payloadPart.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(normalizedPayload));
+    if (!payload.exp) return true;
+    return payload.exp * 1000 > Date.now();
+  } catch {
+    return false;
+  }
+}
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    if (stored) {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (isTokenUsable(stored)) {
       setToken(stored);
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
     }
   }, []);
 
@@ -25,7 +45,7 @@ export function AuthProvider({ children }) {
       const data = await res.json();
 
       if (res.ok && data.token) {
-        sessionStorage.setItem(STORAGE_KEY, data.token);
+        localStorage.setItem(STORAGE_KEY, data.token);
         setToken(data.token);
         return null;
       }
@@ -37,11 +57,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const clearAuth = useCallback(() => {
-    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     setToken(null);
   }, []);
 
-  const isAuthenticated = !!token;
+  const isAuthenticated = isTokenUsable(token);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, verify, clearAuth, token }}>
