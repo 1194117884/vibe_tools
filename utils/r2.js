@@ -4,6 +4,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const ALLOWED_TYPES = [
   'image/',
+  'video/',
   'application/pdf',
   'application/zip',
   'application/gzip',

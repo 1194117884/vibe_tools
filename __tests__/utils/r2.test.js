@@ -135,6 +135,11 @@ describe('validateFile', () => {
     expect(result.valid).toBe(true);
   });
 
+  test('accepts video/mp4', () => {
+    const result = validateFile('preview.mp4', 20000000, 'video/mp4');
+    expect(result.valid).toBe(true);
+  });
+
   test('accepts legacy .doc files', () => {
     const result = validateFile('legacy.doc', 100000, 'application/msword');
     expect(result.valid).toBe(true);
