@@ -130,6 +130,11 @@ describe('validateFile', () => {
     expect(result.valid).toBe(true);
   });
 
+  test('accepts html files', () => {
+    const result = validateFile('page.html', 5000, 'text/html');
+    expect(result.valid).toBe(true);
+  });
+
   test('accepts csv files', () => {
     const result = validateFile('data.csv', 1000, 'text/csv');
     expect(result.valid).toBe(true);

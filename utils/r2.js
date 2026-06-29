@@ -11,6 +11,7 @@ const ALLOWED_TYPES = [
   'application/x-7z-compressed',
   'application/x-rar-compressed',
   'text/plain',
+  'text/html',
   'text/csv',
   'application/json',
   'application/vnd.openxmlformats-officedocument.',

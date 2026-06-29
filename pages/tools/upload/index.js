@@ -251,7 +251,7 @@ export default function UploadTool() {
               拖拽文件到此处或点击选择
             </p>
             <p className="text-[14px] text-[#6e6e73]">
-              支持图片、视频、PDF、文档、压缩包，最大 100MB
+              支持图片、视频、HTML、PDF、文档、压缩包，最大 100MB
             </p>
           </div>
         </div>
