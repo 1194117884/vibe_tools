@@ -18,6 +18,7 @@ const tools = [
   { id: 'morse', name: 'Morse Code', desc: 'Interactive Morse tree translator', icon: '🌳' },
   { id: 'banner', name: 'Banner Text', desc: 'Generate ASCII art text banners', icon: '🔤' },
   { id: 'jsformat', name: 'JS Formatter', desc: 'Format & minify JavaScript', icon: '📐' },
+  { id: 'game-matrix', name: 'Game Matrix', desc: 'Manage game positioning & competitive analysis', icon: '🎮' },
 ];
 
 export default function Home() {

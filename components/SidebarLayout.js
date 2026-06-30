@@ -26,6 +26,7 @@ const tools = [
   { id: 'morse', name: 'Morse Code', icon: '🌳' },
   { id: 'banner', name: 'Banner Text', icon: '🔤' },
   { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
+  { id: 'game-matrix', name: 'Game Matrix', icon: '🎮' },
 ];
 
 const protectedTools = [
