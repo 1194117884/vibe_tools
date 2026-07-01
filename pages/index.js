@@ -6,6 +6,7 @@ const tools = [
   { id: 'base64', name: 'Base64', desc: 'Encode & decode Base64', icon: 'Aa' },
   { id: 'url', name: 'URL Encoder', desc: 'URL encode & decode', icon: '🔗' },
   { id: 'hash', name: 'Hash Generator', desc: 'MD5, SHA-1, SHA-256', icon: '#' },
+  { id: 'password', name: 'Password Generator', desc: 'Generate strong passwords', icon: '🔒' },
   { id: 'aes', name: 'AES Encrypt', desc: 'Symmetric encryption', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', desc: 'Generate RSA key pairs', icon: '🔑' },
   { id: 'image', name: 'Image Convert', desc: 'HEIC/PNG/JPG/WebP conversion', icon: '🖼' },
@@ -39,7 +40,7 @@ export default function Home() {
             Your personal toolkit for everyday tasks
           </p>
           <p className="mt-3 text-body text-[#6e6e73] max-w-lg">
-            Sixteen simple utilities to format JSON, encode data, generate hashes,
+            Eighteen simple utilities to format JSON, encode data, generate hashes,
             convert images, and more — all running locally in your browser.
           </p>
         </div>

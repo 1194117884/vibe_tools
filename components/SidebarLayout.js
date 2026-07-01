@@ -14,6 +14,7 @@ const tools = [
   { id: 'url', name: 'URL Encoder', icon: '🔗' },
   { id: 'request', name: 'Request Builder', icon: '↔' },
   { id: 'hash', name: 'Hash Generator', icon: '#' },
+  { id: 'password', name: 'Password Generator', icon: '🔒' },
   { id: 'aes', name: 'AES Encrypt', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', icon: '🔑' },
   { id: 'image', name: 'Image Convert', icon: '🖼' },
