@@ -10,6 +10,7 @@ const tools = [
   { id: 'aes', name: 'AES Encrypt', desc: 'Symmetric encryption', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', desc: 'Generate RSA key pairs', icon: '🔑' },
   { id: 'image', name: 'Image Convert', desc: 'HEIC/PNG/JPG/WebP conversion', icon: '🖼' },
+  { id: 'paste-download', name: 'Paste to Download', desc: 'Save clipboard images & files', icon: '📋' },
   { id: 'jwt', name: 'JWT Decoder', desc: 'Parse JWT tokens', icon: '🎫' },
   { id: 'cron', name: 'Cron Generator', desc: 'Build cron expressions', icon: '⏰' },
   { id: 'color', name: 'Color Converter', desc: 'HEX/RGB/HSL', icon: '🎨' },
@@ -40,7 +41,7 @@ export default function Home() {
             Your personal toolkit for everyday tasks
           </p>
           <p className="mt-3 text-body text-[#6e6e73] max-w-lg">
-            Eighteen simple utilities to format JSON, encode data, generate hashes,
+            Nineteen simple utilities to format JSON, encode data, generate hashes,
             convert images, and more — all running locally in your browser.
           </p>
         </div>

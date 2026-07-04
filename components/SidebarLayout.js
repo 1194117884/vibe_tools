@@ -18,6 +18,7 @@ const tools = [
   { id: 'aes', name: 'AES Encrypt', icon: '🔐' },
   { id: 'rsa', name: 'RSA Key Gen', icon: '🔑' },
   { id: 'image', name: 'Image Convert', icon: '🖼' },
+  { id: 'paste-download', name: 'Paste Download', icon: '📋' },
   { id: 'jwt', name: 'JWT Decoder', icon: '🎫' },
   { id: 'cron', name: 'Cron Generator', icon: '⏰' },
   { id: 'color', name: 'Color Converter', icon: '🎨' },
