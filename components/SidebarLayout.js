@@ -44,6 +44,21 @@ export default function SidebarLayout({ children }) {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('sidebar_collapsed') === 'true') {
+      setSidebarCollapsed(true);
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('sidebar_collapsed', String(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (localStorage.getItem(PROTECTED_MENU_STORAGE_KEY) === 'true') {
@@ -191,19 +206,34 @@ export default function SidebarLayout({ children }) {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:w-64 md:fixed md:inset-y-0 bg-surface border-r border-border z-40">
+      <aside className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 bg-surface border-r border-border z-40 transition-all duration-300 ${sidebarCollapsed ? 'md:w-14' : 'md:w-64'}`}>
         <div className="flex flex-col h-full">
           {/* Brand */}
-          <div className="px-6 h-14 flex items-center border-b border-border">
-            <Link href="/" className="text-body-emphasis text-text tracking-tight font-semibold">
+          <div className="px-3 h-14 flex items-center border-b border-border">
+            <Link href="/" className={`text-body-emphasis text-text tracking-tight font-semibold whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>
               Vibe Tools
             </Link>
+            <button
+              onClick={toggleSidebar}
+              className={`p-1.5 rounded hover:bg-surfaceHover transition-colors text-textDim ${sidebarCollapsed ? 'mx-auto' : 'ml-auto'}`}
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                {sidebarCollapsed ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                )}
+              </svg>
+            </button>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
             <Link
               href="/"
+              title={sidebarCollapsed ? 'Home' : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                 isHome
                   ? 'bg-primary/10 text-primary font-medium'
@@ -213,7 +243,7 @@ export default function SidebarLayout({ children }) {
               <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955a1.126 1.126 0 0 1 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
               </svg>
-              <span className="text-control">Home</span>
+              <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>Home</span>
             </Link>
 
             <div className="my-2 border-t border-border" />
@@ -222,6 +252,7 @@ export default function SidebarLayout({ children }) {
               <Link
                 key={tool.id}
                 href={`/tools/${tool.id}`}
+                title={sidebarCollapsed ? tool.name : undefined}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                   isActive(tool.id)
                     ? 'bg-primary/10 text-primary font-medium'
@@ -229,7 +260,7 @@ export default function SidebarLayout({ children }) {
                 }`}
               >
                 <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                <span className="text-control">{tool.name}</span>
+                <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>{tool.name}</span>
               </Link>
             ))}
 
@@ -240,6 +271,7 @@ export default function SidebarLayout({ children }) {
                   <Link
                     key={tool.id}
                     href={`/tools/${tool.id}`}
+                    title={sidebarCollapsed ? tool.name : undefined}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
                       isActive(tool.id)
                         ? 'bg-primary/10 text-primary font-medium'
@@ -247,7 +279,7 @@ export default function SidebarLayout({ children }) {
                     }`}
                   >
                     <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                    <span className="text-control">{tool.name}</span>
+                    <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>{tool.name}</span>
                   </Link>
                 ))}
               </>
@@ -255,10 +287,10 @@ export default function SidebarLayout({ children }) {
           </nav>
 
           {/* Sidebar footer */}
-          <div className="flex items-center justify-between px-5 py-3 border-t border-border">
-            <span className="text-micro text-textDim">Appearance</span>
+          <div className="flex items-center justify-between px-3 py-3 border-t border-border">
+            <span className={`text-micro text-textDim whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>Appearance</span>
             <HiddenTrigger onActivated={revealProtectedMenu}>
-              <span className="text-micro text-textDim select-none cursor-default">·</span>
+              <span className="text-micro text-textDim select-none cursor-default">{sidebarCollapsed ? '' : '·'}</span>
             </HiddenTrigger>
             <ThemeToggle />
           </div>
@@ -266,7 +298,7 @@ export default function SidebarLayout({ children }) {
       </aside>
 
       {/* Main content area */}
-      <div className="flex-1 md:ml-64 pt-12 md:pt-0 min-h-screen flex flex-col">
+      <div className={`flex-1 pt-12 md:pt-0 min-h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-14' : 'md:ml-64'}`}>
         {children}
       </div>
 
