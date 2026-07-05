@@ -17,6 +17,8 @@ const ALLOWED_TYPES = [
   'application/vnd.openxmlformats-officedocument.',
   'application/vnd.ms-',
   'application/msword',
+  'application/vnd.android.package-archive',
+  'application/octet-stream',
 ];
 
 /**

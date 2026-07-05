@@ -149,4 +149,14 @@ describe('validateFile', () => {
     const result = validateFile('legacy.doc', 100000, 'application/msword');
     expect(result.valid).toBe(true);
   });
+
+  test('accepts android apk files', () => {
+    const result = validateFile('app.apk', 50000000, 'application/vnd.android.package-archive');
+    expect(result.valid).toBe(true);
+  });
+
+  test('accepts ios ipa files (octet-stream)', () => {
+    const result = validateFile('app.ipa', 80000000, 'application/octet-stream');
+    expect(result.valid).toBe(true);
+  });
 });
