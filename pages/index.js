@@ -1,27 +1,6 @@
 import Head from 'next/head';
 import Link from 'next/link';
-
-const tools = [
-  { id: 'json', name: 'JSON Formatter', desc: 'Format, validate & minify JSON', icon: '{ }' },
-  { id: 'base64', name: 'Base64', desc: 'Encode & decode Base64', icon: 'Aa' },
-  { id: 'url', name: 'URL Encoder', desc: 'URL encode & decode', icon: '🔗' },
-  { id: 'hash', name: 'Hash Generator', desc: 'MD5, SHA-1, SHA-256', icon: '#' },
-  { id: 'password', name: 'Password Generator', desc: 'Generate strong passwords', icon: '🔒' },
-  { id: 'aes', name: 'AES Encrypt', desc: 'Symmetric encryption', icon: '🔐' },
-  { id: 'rsa', name: 'RSA Key Gen', desc: 'Generate RSA key pairs', icon: '🔑' },
-  { id: 'image', name: 'Image Convert', desc: 'HEIC/PNG/JPG/WebP conversion', icon: '🖼' },
-  { id: 'paste-download', name: 'Paste to Download', desc: 'Save clipboard images & files', icon: '📋' },
-  { id: 'jwt', name: 'JWT Decoder', desc: 'Parse JWT tokens', icon: '🎫' },
-  { id: 'cron', name: 'Cron Generator', desc: 'Build cron expressions', icon: '⏰' },
-  { id: 'color', name: 'Color Converter', desc: 'HEX/RGB/HSL', icon: '🎨' },
-  { id: 'multibase', name: 'Multi-Base Converter', desc: 'Convert between hex, dec, bin & ASCII', icon: '🔢' },
-  { id: 'md-pdf', name: 'Markdown to PDF', desc: 'Convert MD to PDF', icon: '📄' },
-  { id: 'timestamp', name: 'Timestamp', desc: 'Unix timestamp converter', icon: '🕐' },
-  { id: 'morse', name: 'Morse Code', desc: 'Interactive Morse tree translator', icon: '🌳' },
-  { id: 'banner', name: 'Banner Text', desc: 'Generate ASCII art text banners', icon: '🔤' },
-  { id: 'jsformat', name: 'JS Formatter', desc: 'Format & minify JavaScript', icon: '📐' },
-  { id: 'game-matrix', name: 'Game Matrix', desc: 'Manage game positioning & competitive analysis', icon: '🎮' },
-];
+import { tools } from '../utils/tools';
 
 export default function Home() {
   return (
@@ -41,8 +20,9 @@ export default function Home() {
             Your personal toolkit for everyday tasks
           </p>
           <p className="mt-3 text-body text-[#6e6e73] max-w-lg">
-            Nineteen simple utilities to format JSON, encode data, generate hashes,
+            {tools.length} simple utilities to format JSON, encode data, generate hashes,
             convert images, and more — all running locally in your browser.
+            Press <kbd className="px-1.5 py-0.5 rounded border border-[#424245] text-[#a1a1a6] text-[13px] font-sans">⌘K</kbd> to search.
           </p>
         </div>
       </section>

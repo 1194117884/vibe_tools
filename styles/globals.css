@@ -77,3 +77,13 @@
 .animate-fade-in {
   animation: fade-in 0.2s ease-out;
 }
+
+/* Hide scrollbars while keeping scroll (sidebar, etc.) */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

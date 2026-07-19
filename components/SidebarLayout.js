@@ -4,37 +4,11 @@ import { useRouter } from 'next/router';
 import ThemeToggle from './ThemeToggle';
 import HiddenTrigger from './HiddenTrigger';
 import AuthModal from './AuthModal';
+import ToolSearch, { ToolSearchTrigger } from './ToolSearch';
 import { useAuth } from '../contexts/AuthContext';
+import { protectedTools, tools } from '../utils/tools';
 
 const PROTECTED_MENU_STORAGE_KEY = 'protected_tools_menu_visible';
-
-const tools = [
-  { id: 'json', name: 'JSON Formatter', icon: '{ }' },
-  { id: 'base64', name: 'Base64', icon: 'Aa' },
-  { id: 'url', name: 'URL Encoder', icon: '🔗' },
-  { id: 'request', name: 'Request Builder', icon: '↔' },
-  { id: 'hash', name: 'Hash Generator', icon: '#' },
-  { id: 'password', name: 'Password Generator', icon: '🔒' },
-  { id: 'aes', name: 'AES Encrypt', icon: '🔐' },
-  { id: 'rsa', name: 'RSA Key Gen', icon: '🔑' },
-  { id: 'image', name: 'Image Convert', icon: '🖼' },
-  { id: 'paste-download', name: 'Paste Download', icon: '📋' },
-  { id: 'jwt', name: 'JWT Decoder', icon: '🎫' },
-  { id: 'cron', name: 'Cron Generator', icon: '⏰' },
-  { id: 'color', name: 'Color Converter', icon: '🎨' },
-  { id: 'multibase', name: 'Multi-Base Converter', icon: '🔢' },
-  { id: 'md-pdf', name: 'Markdown to PDF', icon: '📄' },
-  { id: 'timestamp', name: 'Timestamp', icon: '🕐' },
-  { id: 'morse', name: 'Morse Code', icon: '🌳' },
-  { id: 'banner', name: 'Banner Text', icon: '🔤' },
-  { id: 'jsformat', name: 'JS Formatter', icon: '📐' },
-  { id: 'game-matrix', name: 'Game Matrix', icon: '🎮' },
-];
-
-const protectedTools = [
-  { id: 'upload', name: 'Upload Files', icon: '⬆️' },
-  { id: 'douyin-proxy', name: 'Douyin Proxy', icon: '▶' },
-];
 
 export default function SidebarLayout({ children }) {
   const router = useRouter();
@@ -89,6 +63,11 @@ export default function SidebarLayout({ children }) {
   const isHome = router.pathname === '/';
   const visibleProtectedTools = protectedMenuVisible || isAuthenticated ? protectedTools : [];
 
+  const searchTriggerClass = (collapsed) =>
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-text hover:bg-surfaceHover w-full ${
+      collapsed ? 'justify-center' : ''
+    }`;
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Mobile header */}
@@ -103,7 +82,10 @@ export default function SidebarLayout({ children }) {
           </svg>
         </button>
         <Link href="/" className="text-body-emphasis text-text tracking-tight">Vibe Tools</Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <ToolSearchTrigger className="p-1.5 rounded hover:bg-surfaceHover transition-colors text-text" collapsed />
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Mobile menu overlay */}
@@ -136,7 +118,7 @@ export default function SidebarLayout({ children }) {
               </div>
 
               {/* Mobile sidebar navigation */}
-              <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+              <nav className="flex-1 overflow-y-auto scrollbar-hide py-2 px-2 space-y-0.5">
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
@@ -151,6 +133,11 @@ export default function SidebarLayout({ children }) {
                   </svg>
                   <span className="text-control">Home</span>
                 </Link>
+
+                <ToolSearchTrigger
+                  className={searchTriggerClass(false)}
+                  collapsed={false}
+                />
 
                 <div className="my-2 border-t border-border" />
 
@@ -230,7 +217,7 @@ export default function SidebarLayout({ children }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+          <nav className="flex-1 overflow-y-auto scrollbar-hide py-3 px-2 space-y-0.5">
             <Link
               href="/"
               title={sidebarCollapsed ? 'Home' : undefined}
@@ -245,6 +232,11 @@ export default function SidebarLayout({ children }) {
               </svg>
               <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>Home</span>
             </Link>
+
+            <ToolSearchTrigger
+              className={searchTriggerClass(sidebarCollapsed)}
+              collapsed={sidebarCollapsed}
+            />
 
             <div className="my-2 border-t border-border" />
 
@@ -301,6 +293,8 @@ export default function SidebarLayout({ children }) {
       <div className={`flex-1 pt-12 md:pt-0 min-h-screen flex flex-col transition-all duration-300 ${sidebarCollapsed ? 'md:ml-14' : 'md:ml-64'}`}>
         {children}
       </div>
+
+      <ToolSearch protectedVisible={protectedMenuVisible || isAuthenticated} />
 
       <AuthModal
         open={showAuthModal}
