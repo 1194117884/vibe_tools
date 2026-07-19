@@ -199,7 +199,7 @@ export default function ToolSearch({ protectedVisible = false }) {
           id="tool-search-results"
           ref={listRef}
           role="listbox"
-          className="max-h-[50vh] overflow-y-auto py-2"
+          className="max-h-[50vh] overflow-y-auto scrollbar-hide py-2"
         >
           {results.length === 0 ? (
             <li className="px-4 py-8 text-center text-control text-textMuted">
