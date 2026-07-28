@@ -1,4 +1,41 @@
-import { filterTools, protectedTools, tools } from '../../utils/tools';
+import {
+  CATEGORIES,
+  filterTools,
+  groupToolsByCategory,
+  protectedTools,
+  tools,
+} from '../../utils/tools';
+
+describe('groupToolsByCategory', () => {
+  test('returns non-empty groups in category order', () => {
+    const groups = groupToolsByCategory(tools);
+    expect(groups.length).toBeGreaterThan(0);
+    expect(groups.every((g) => g.tools.length > 0)).toBe(true);
+    // order matches CATEGORIES definition
+    const order = groups.map((g) => g.id);
+    const expected = CATEGORIES.map((c) => c.id).filter((id) => order.includes(id));
+    expect(order).toEqual(expected);
+  });
+
+  test('includes every public tool exactly once', () => {
+    const groups = groupToolsByCategory(tools);
+    const ids = groups.flatMap((g) => g.tools.map((t) => t.id));
+    expect(ids).toHaveLength(tools.length);
+    expect(new Set(ids).size).toBe(tools.length);
+  });
+
+  test('groups protected tools under Private', () => {
+    const groups = groupToolsByCategory(protectedTools);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].id).toBe('private');
+    expect(groups[0].label).toBe('Private');
+  });
+
+  test('unknown category falls back to other', () => {
+    const groups = groupToolsByCategory([{ id: 'x', name: 'X', category: 'nope' }]);
+    expect(groups.some((g) => g.id === 'other' && g.tools[0].id === 'x')).toBe(true);
+  });
+});
 
 describe('filterTools', () => {
   test('returns all tools for empty query', () => {

@@ -6,9 +6,99 @@ import HiddenTrigger from './HiddenTrigger';
 import AuthModal from './AuthModal';
 import ToolSearch, { ToolSearchTrigger } from './ToolSearch';
 import { useAuth } from '../contexts/AuthContext';
-import { protectedTools, tools } from '../utils/tools';
+import { groupToolsByCategory, protectedTools, tools } from '../utils/tools';
 
 const PROTECTED_MENU_STORAGE_KEY = 'protected_tools_menu_visible';
+const CATEGORY_COLLAPSED_STORAGE_KEY = 'sidebar_category_collapsed';
+
+function loadCollapsedCategories() {
+  try {
+    const raw = localStorage.getItem(CATEGORY_COLLAPSED_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function ToolNavLink({ tool, active, collapsed, onClick }) {
+  return (
+    <Link
+      href={`/tools/${tool.id}`}
+      onClick={onClick}
+      title={collapsed ? tool.name : undefined}
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 ${
+        active
+          ? 'bg-primary/10 text-primary font-medium'
+          : 'text-text hover:bg-surfaceHover'
+      }`}
+    >
+      <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
+      <span className={`text-control whitespace-nowrap ${collapsed ? 'hidden' : 'block'}`}>{tool.name}</span>
+    </Link>
+  );
+}
+
+function CategoryGroup({
+  group,
+  sidebarCollapsed,
+  isActive,
+  onNavigate,
+  isFirst = false,
+  open,
+  onToggle,
+}) {
+  // Icon rail always shows tools so navigation stays reachable
+  const showTools = sidebarCollapsed || open;
+  const hasActive = group.tools.some((t) => isActive(t.id));
+
+  return (
+    <div className={isFirst ? 'pt-0' : 'pt-3'}>
+      {sidebarCollapsed ? (
+        !isFirst && <div className="my-1.5 mx-2 border-t border-border" aria-hidden="true" />
+      ) : (
+        <button
+          type="button"
+          onClick={() => onToggle(group.id)}
+          aria-expanded={open}
+          className={`w-full flex items-center gap-1 px-3 py-1 rounded-md text-left transition-colors duration-150 hover:bg-surfaceHover group ${
+            hasActive && !open ? 'text-primary' : 'text-textDim'
+          }`}
+        >
+          <span className="flex-1 text-[11px] font-semibold uppercase tracking-wider">
+            {group.label}
+          </span>
+          <svg
+            className={`h-3.5 w-3.5 flex-shrink-0 opacity-60 transition-transform duration-150 ${
+              open ? 'rotate-0' : '-rotate-90'
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            aria-hidden="true"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          </svg>
+        </button>
+      )}
+      {showTools && (
+        <div className="space-y-0.5 mt-0.5">
+          {group.tools.map((tool) => (
+            <ToolNavLink
+              key={tool.id}
+              tool={tool}
+              active={isActive(tool.id)}
+              collapsed={sidebarCollapsed}
+              onClick={onNavigate}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SidebarLayout({ children }) {
   const router = useRouter();
@@ -19,11 +109,14 @@ export default function SidebarLayout({ children }) {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // map of categoryId -> true when collapsed
+  const [collapsedCategories, setCollapsedCategories] = useState({});
 
   useEffect(() => {
     if (localStorage.getItem('sidebar_collapsed') === 'true') {
       setSidebarCollapsed(true);
     }
+    setCollapsedCategories(loadCollapsedCategories());
   }, []);
 
   const toggleSidebar = () => {
@@ -33,6 +126,16 @@ export default function SidebarLayout({ children }) {
       return next;
     });
   };
+
+  const toggleCategory = (categoryId) => {
+    setCollapsedCategories((prev) => {
+      const next = { ...prev, [categoryId]: !prev[categoryId] };
+      localStorage.setItem(CATEGORY_COLLAPSED_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const isCategoryOpen = (categoryId) => !collapsedCategories[categoryId];
 
   useEffect(() => {
     if (localStorage.getItem(PROTECTED_MENU_STORAGE_KEY) === 'true') {
@@ -62,6 +165,24 @@ export default function SidebarLayout({ children }) {
   const isActive = (toolId) => router.pathname === `/tools/${toolId}`;
   const isHome = router.pathname === '/';
   const visibleProtectedTools = protectedMenuVisible || isAuthenticated ? protectedTools : [];
+  const publicGroups = groupToolsByCategory(tools);
+  const protectedGroups = groupToolsByCategory(visibleProtectedTools);
+
+  // Keep the active tool's category open so the current page stays visible
+  useEffect(() => {
+    const match = router.pathname.match(/^\/tools\/([^/]+)/);
+    if (!match) return;
+    const toolId = match[1];
+    const all = [...tools, ...protectedTools];
+    const tool = all.find((t) => t.id === toolId);
+    if (!tool?.category) return;
+    setCollapsedCategories((prev) => {
+      if (!prev[tool.category]) return prev;
+      const next = { ...prev, [tool.category]: false };
+      localStorage.setItem(CATEGORY_COLLAPSED_STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [router.pathname]);
 
   const searchTriggerClass = (collapsed) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-text hover:bg-surfaceHover w-full ${
@@ -141,42 +262,31 @@ export default function SidebarLayout({ children }) {
 
                 <div className="my-2 border-t border-border" />
 
-                {tools.map((tool) => (
-                  <Link
-                    key={tool.id}
-                    href={`/tools/${tool.id}`}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                      isActive(tool.id)
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-text hover:bg-surfaceHover'
-                    }`}
-                  >
-                    <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                    <span className="text-control">{tool.name}</span>
-                  </Link>
+                {publicGroups.map((group, index) => (
+                  <CategoryGroup
+                    key={group.id}
+                    group={group}
+                    sidebarCollapsed={false}
+                    isActive={isActive}
+                    isFirst={index === 0}
+                    open={isCategoryOpen(group.id)}
+                    onToggle={toggleCategory}
+                    onNavigate={() => setMobileMenuOpen(false)}
+                  />
                 ))}
 
-                {visibleProtectedTools.length > 0 && (
-                  <>
-                    <div className="my-2 border-t border-border" />
-                    {visibleProtectedTools.map((tool) => (
-                      <Link
-                        key={tool.id}
-                        href={`/tools/${tool.id}`}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                          isActive(tool.id)
-                            ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-text hover:bg-surfaceHover'
-                        }`}
-                      >
-                        <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                        <span className="text-control">{tool.name}</span>
-                      </Link>
-                    ))}
-                  </>
-                )}
+                {protectedGroups.map((group, index) => (
+                  <CategoryGroup
+                    key={group.id}
+                    group={group}
+                    sidebarCollapsed={false}
+                    isActive={isActive}
+                    isFirst={publicGroups.length === 0 && index === 0}
+                    open={isCategoryOpen(group.id)}
+                    onToggle={toggleCategory}
+                    onNavigate={() => setMobileMenuOpen(false)}
+                  />
+                ))}
               </nav>
 
               {/* Mobile sidebar footer */}
@@ -240,42 +350,29 @@ export default function SidebarLayout({ children }) {
 
             <div className="my-2 border-t border-border" />
 
-            {tools.map((tool) => (
-              <Link
-                key={tool.id}
-                href={`/tools/${tool.id}`}
-                title={sidebarCollapsed ? tool.name : undefined}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                  isActive(tool.id)
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-text hover:bg-surfaceHover'
-                }`}
-              >
-                <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>{tool.name}</span>
-              </Link>
+            {publicGroups.map((group, index) => (
+              <CategoryGroup
+                key={group.id}
+                group={group}
+                sidebarCollapsed={sidebarCollapsed}
+                isActive={isActive}
+                isFirst={index === 0}
+                open={isCategoryOpen(group.id)}
+                onToggle={toggleCategory}
+              />
             ))}
 
-            {visibleProtectedTools.length > 0 && (
-              <>
-                <div className="my-2 border-t border-border" />
-                {visibleProtectedTools.map((tool) => (
-                  <Link
-                    key={tool.id}
-                    href={`/tools/${tool.id}`}
-                    title={sidebarCollapsed ? tool.name : undefined}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 ${
-                      isActive(tool.id)
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'text-text hover:bg-surfaceHover'
-                    }`}
-                  >
-                    <span className="text-base flex-shrink-0 w-5 text-center leading-none">{tool.icon}</span>
-                    <span className={`text-control whitespace-nowrap ${sidebarCollapsed ? 'hidden' : 'block'}`}>{tool.name}</span>
-                  </Link>
-                ))}
-              </>
-            )}
+            {protectedGroups.map((group, index) => (
+              <CategoryGroup
+                key={group.id}
+                group={group}
+                sidebarCollapsed={sidebarCollapsed}
+                isActive={isActive}
+                isFirst={publicGroups.length === 0 && index === 0}
+                open={isCategoryOpen(group.id)}
+                onToggle={toggleCategory}
+              />
+            ))}
           </nav>
 
           {/* Sidebar footer */}
