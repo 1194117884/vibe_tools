@@ -65,6 +65,7 @@ export const tools = [
 
   // Other
   { id: 'game-matrix', name: 'Game Matrix', desc: 'Manage game positioning & competitive analysis', icon: '🎮', category: 'other' },
+  { id: 'lazyvim-learn', name: 'LazyVim Learn', desc: 'Learn and practice LazyVim keymaps', icon: '⌨️', category: 'other' },
 ];
 
 export const protectedTools = [
