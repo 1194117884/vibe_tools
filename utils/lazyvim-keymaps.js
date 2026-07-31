@@ -145,10 +145,10 @@ export function filterKeymapsByCategory(keymaps, category) {
 /**
  * Get a random keymap from the list, optionally filtered by categories.
  */
-export function getRandomKeymap(keymaps, categories) {
-  let pool = keymaps;
+export function getRandomKeymap(source, categories) {
+  let pool = source;
   if (categories && categories.length > 0) {
-    pool = keymaps.filter((km) => categories.includes(km.category));
+    pool = source.filter((km) => categories.includes(km.category));
   }
   if (pool.length === 0) return null;
   return pool[Math.floor(Math.random() * pool.length)];
