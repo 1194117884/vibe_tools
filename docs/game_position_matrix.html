@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Position Matrix 游戏定位矩阵系统</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --text2: #cbd5e1;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --shadow: rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.16), transparent 28rem),
+        radial-gradient(circle at top right, rgba(167,139,250,.15), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid rgba(148,163,184,.18);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(15,23,42,.86);
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(24px, 3vw, 38px);
+      letter-spacing: -.04em;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      color: var(--text2);
+      line-height: 1.65;
+      max-width: 1120px;
+      margin: 0;
+    }
+
+    .app {
+      padding: 22px 28px 44px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    .sidebar, .main-panel, .detail-panel {
+      background: rgba(17,24,39,.88);
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 60px var(--shadow);
+    }
+
+    .sidebar {
+      padding: 18px;
+      height: fit-content;
+      position: sticky;
+      top: 128px;
+    }
+
+    .main-panel {
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid rgba(148,163,184,.15);
+      background: rgba(15,23,42,.45);
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid rgba(148,163,184,.25);
+      border-radius: 12px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 88px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(56,189,248,.12);
+    }
+
+    button {
+      border: 1px solid rgba(148,163,184,.25);
+      background: linear-gradient(180deg, #1f2937, #111827);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform .08s ease, border-color .16s ease, background .16s ease;
+    }
+
+    button:hover {
+      border-color: rgba(56,189,248,.65);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: linear-gradient(180deg, #0ea5e9, #0369a1);
+      border-color: rgba(56,189,248,.85);
+      color: white;
+      font-weight: 700;
+    }
+
+    button.danger {
+      background: linear-gradient(180deg, #7f1d1d, #450a0a);
+      border-color: rgba(248,113,113,.65);
+    }
+
+    button.soft {
+      background: rgba(56,189,248,.08);
+      border-color: rgba(56,189,248,.28);
+      color: #bae6fd;
+    }
+
+    button.small {
+      padding: 6px 9px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(148,163,184,.22);
+      background: rgba(15,23,42,.7);
+      color: var(--text2);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+    }
+
+    .pill.hot { color: #fecaca; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.09); }
+    .pill.good { color: #bbf7d0; border-color: rgba(34,197,94,.32); background: rgba(34,197,94,.08); }
+    .pill.blue { color: #bae6fd; border-color: rgba(56,189,248,.3); background: rgba(56,189,248,.08); }
+    .pill.purple { color: #ddd6fe; border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.08); }
+    .pill.warn { color: #fde68a; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0 4px;
+    }
+
+    .stat {
+      background: rgba(15,23,42,.75);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .stat strong {
+      font-size: 22px;
+      display: block;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      margin: 12px 0 0;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: calc(100vh - 230px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 1650px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid rgba(148,163,184,.14);
+      padding: 10px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: #111827;
+      color: #cbd5e1;
+      font-size: 12px;
+      letter-spacing: .02em;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background .12s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(56,189,248,.06);
+    }
+
+    tbody tr.selected {
+      outline: 2px solid rgba(56,189,248,.55);
+      outline-offset: -2px;
+      background: rgba(56,189,248,.08);
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      background: #111827;
+      min-width: 170px;
+      max-width: 220px;
+    }
+
+    tbody .sticky-col {
+      background: #0f172a;
+    }
+
+    .name-cell strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .name-cell small {
+      color: var(--muted);
+      display: block;
+      line-height: 1.35;
+    }
+
+    .score {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      align-items: center;
+      gap: 7px;
+      min-width: 86px;
+    }
+
+    .bar {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148,163,184,.16);
+      overflow: hidden;
+    }
+
+    .bar > i {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 2px 0 12px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .form-grid .wide {
+      grid-column: 1 / -1;
+    }
+
+    .drawer {
+      position: fixed;
+      right: 20px;
+      top: 108px;
+      bottom: 20px;
+      width: min(760px, calc(100vw - 40px));
+      z-index: 30;
+      transform: translateX(calc(100% + 30px));
+      transition: transform .22s ease;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer.open {
+      transform: translateX(0);
+    }
+
+    .drawer-head {
+      padding: 16px;
+      border-bottom: 1px solid rgba(148,163,184,.16);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      background: rgba(15,23,42,.65);
+    }
+
+    .drawer-body {
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .drawer h2 { margin: 0; font-size: 18px; }
+
+    .compare-panel {
+      padding: 16px;
+      border-bottom: 1px solid rgba(148,163,184,.14);
+      display: none;
+      background: rgba(15,23,42,.58);
+    }
+
+    .compare-panel.show { display: block; }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 190px 1fr 1fr;
+      gap: 0;
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .compare-grid > div {
+      padding: 10px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      min-height: 40px;
+      line-height: 1.45;
+    }
+
+    .compare-grid > div:nth-child(3n+1) {
+      color: var(--muted);
+      background: rgba(15,23,42,.55);
+    }
+
+    .compare-grid > div:nth-child(3n+2), .compare-grid > div:nth-child(3n+3) {
+      background: rgba(11,18,32,.58);
+    }
+
+    .changed {
+      color: #fde68a;
+      font-weight: 700;
+    }
+
+    .json-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      background: rgba(2,6,23,.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+    }
+
+    .json-modal.show { display: flex; }
+
+    .modal-card {
+      width: min(980px, 96vw);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      background: #0f172a;
+      border: 1px solid rgba(148,163,184,.24);
+      border-radius: 18px;
+      box-shadow: 0 25px 90px rgba(0,0,0,.55);
+    }
+
+    .modal-card header {
+      position: static;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15,23,42,.95);
+    }
+
+    .modal-card textarea {
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+      min-height: 55vh;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+    }
+
+    .modal-actions {
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .template-card {
+      background: rgba(15,23,42,.56);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 14px;
+      padding: 12px;
+      margin-top: 12px;
+    }
+
+    .template-card h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+    }
+
+    .template-card p, .template-card li {
+      color: var(--text2);
+      line-height: 1.55;
+      font-size: 12px;
+    }
+
+    .template-card ul {
+      padding-left: 18px;
+      margin: 8px 0 0;
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 30px;
+    }
+
+    @media (max-width: 1100px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        position: static;
+      }
+      .table-wrap {
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Game Position Matrix 游戏定位矩阵系统</h1>
+    <p class="subtitle">
+      用一张动态矩阵管理游戏定位：每一行代表一个游戏、竞品、版本分支或微调方案。
+      目标不是“记功能”，而是看清楚：它服务谁、靠什么留存、差异打在哪、改动是否偏离主线。
+    </p>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="section-title">
+        <h2>筛选与数据</h2>
+      </div>
+
+      <div class="field">
+        <label>关键词搜索</label>
+        <input id="searchInput" placeholder="搜名称、定位、竞品、差异点..." />
+      </div>
+
+      <div class="field">
+        <label>平台</label>
+        <select id="platformFilter">
+          <option value="">全部平台</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>大分类</label>
+        <select id="categoryFilter">
+          <option value="">全部分类</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>产品类型</label>
+        <select id="typeFilter">
+          <option value="">全部类型</option>
+        </select>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong id="totalCount">0</strong><span>当前行数</span></div>
+        <div class="stat"><strong id="avgDev">0</strong><span>平均开发难度</span></div>
+        <div class="stat"><strong id="avgStick">0</strong><span>平均粘性</span></div>
+        <div class="stat"><strong id="changedCount">0</strong><span>变更方案</span></div>
+      </div>
+
+      <div style="display:grid; gap:8px; margin-top:14px;">
+        <button class="primary" id="addBtn">+ 新增一行</button>
+        <button class="soft" id="compareBtn">对比选中两行</button>
+        <button id="exportBtn">导出 JSON</button>
+        <button id="importBtn">导入 JSON</button>
+        <button class="danger" id="resetBtn">恢复 DEMO 数据</button>
+      </div>
+
+      <p class="hint">
+        使用方式：点表格任意行可编辑；勾选两行后点“对比选中两行”；复制一行可以做版本微调。
+        所有数据会自动保存到浏览器 localStorage。
+      </p>
+
+      <div class="template-card">
+        <h3>评分口径</h3>
+        <ul>
+          <li>入门门槛：1 打开即懂，5 需要学习成本。</li>
+          <li>深度上限：1 很快玩腻，5 高手可长期研究。</li>
+          <li>粘性：1 偶尔玩，5 每日/社交/成长驱动强。</li>
+          <li>开发难度：1 很轻，5 多系统/多平台/强运营。</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <div class="toolbar">
+        <span class="pill blue" id="storageStatus">localStorage 已启用</span>
+        <span class="pill purple">一行 = 一个定位 / 版本 / 竞品</span>
+        <span class="pill warn">DEMO 数据仅用于理解结构</span>
+      </div>
+
+      <section class="compare-panel" id="comparePanel">
+        <div class="section-title">
+          <h2>两行对比：看清“微调到底改了什么”</h2>
+          <button class="small" id="closeCompareBtn">关闭对比</button>
+        </div>
+        <div id="compareContent"></div>
+      </section>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-col">名称 / 定位</th>
+              <th>选择</th>
+              <th>大分类</th>
+              <th>平台</th>
+              <th>状态</th>
+              <th>核心用户</th>
+              <th>场景</th>
+              <th>单局</th>
+              <th>入门</th>
+              <th>深度</th>
+              <th>粘性</th>
+              <th>玩法组合</th>
+              <th>差异点</th>
+              <th>商业模式</th>
+              <th>开发</th>
+              <th>内容</th>
+              <th>运营</th>
+              <th>竞品</th>
+              <th>机会点</th>
+              <th>变更影响</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <section class="detail-panel drawer" id="drawer">
+    <div class="drawer-head">
+      <h2 id="drawerTitle">编辑矩阵行</h2>
+      <div style="display:flex; gap:8px;">
+        <button class="small" id="duplicateBtn">复制为新版本</button>
+        <button class="small danger" id="deleteBtn">删除</button>
+        <button class="small" id="closeDrawerBtn">关闭</button>
+      </div>
+    </div>
+    <div class="drawer-body">
+      <form id="editForm"></form>
+    </div>
+  </section>
+
+  <div class="json-modal" id="jsonModal">
+    <div class="modal-card">
+      <header>
+        <h2 id="jsonTitle" style="margin:0;font-size:17px;">JSON</h2>
+        <button class="small" id="closeJsonBtn">关闭</button>
+      </header>
+      <textarea id="jsonText"></textarea>
+      <div class="modal-actions">
+        <button id="copyJsonBtn">复制</button>
+        <button class="primary" id="applyJsonBtn">应用导入</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "game_position_matrix_v1";
+
+    const DEFAULT_DATA = [
+      {
+        id: "sudoku_classic_mobile_v0",
+        name: "经典数独 v0",
+        version: "v0",
+        category: "数独",
+        platform: "iOS / Android / Web",
+        status: "概念验证",
+        oneLine: "干净、少打断、输入舒服的每日数独",
+        emotion: "放松 + 成就",
+        productType: "工具型 + 内容型",
+        audience: "25-45 岁碎片时间用户、轻度脑力训练用户",
+        persona: "通勤、午休、睡前打开 5-10 分钟，希望放松但又感觉自己在训练大脑。",
+        scenario: "通勤 / 午休 / 睡前",
+        jtbd: "快速完成一局，获得脑力训练和轻微成就感。",
+        sessionLength: "3-12 分钟",
+        entryScore: 2,
+        depthScore: 3,
+        stickinessScore: 4,
+        coreRule: "9x9，每行、每列、每宫 1-9 不重复，题目唯一解。",
+        playComboCount: 1,
+        variants: "经典 9x9；后续可加 4x4 / 6x6 / Killer",
+        assistSystems: "笔记、撤销、重复高亮、错误检查、提示、自动保存",
+        contentSystem: "生成题 + 每日挑战 + 统计",
+        qualityRequirement: "唯一解；难度稳定；尽量避免需要猜测。",
+        diffType: "体验差异",
+        diffDetail: "不靠复杂玩法，先打输入体验、少广告打断、提示解释清楚。",
+        notDoing: "不做剧情、不做复杂养成、不做强 PVP。",
+        monetization: "广告 + 去广告内购",
+        devScore: 2.5,
+        contentScore: 3,
+        opsScore: 3,
+        techKeys: "数独生成器、求解器、难度评估、本地存档、每日题。",
+        directCompetitors: "Sudoku.com、Microsoft Sudoku、Good Sudoku",
+        indirectCompetitors: "Nonogram、2048、Number Match、填字游戏",
+        publicData: "移动端数独大盘成熟，主流竞品靠每日挑战、题库、广告/IAP 留存。",
+        badReviewKeywords: "广告打断、崩溃丢进度、难度不准、误触、奖励广告失败。",
+        marketChance: "做更干净的输入体验和更温和的商业化。",
+        changeSummary: "基础方案",
+        changeImpact: "作为主线基准。",
+        validationMetrics: "D1/D7 留存、每日挑战完成率、平均局长、提示使用率、广告退出率。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "适合第一版验证。"
+      },
+      {
+        id: "sudoku_coach_v1",
+        name: "数独教练 v1",
+        version: "v1",
+        category: "数独",
+        platform: "iOS / Android",
+        status: "分支方案",
+        oneLine: "让用户真正学会数独技巧的训练型数独",
+        emotion: "成长 + 掌控感",
+        productType: "教学型 + 工具型",
+        audience: "初中级数独玩家、想提升技巧的人",
+        persona: "会玩基础数独，但经常卡住，希望知道为什么这一步能填。",
+        scenario: "晚上学习 / 周末练习 / 长局挑战",
+        jtbd: "不是直接给答案，而是理解解题路径。",
+        sessionLength: "8-25 分钟",
+        entryScore: 3,
+        depthScore: 5,
+        stickinessScore: 4,
+        coreRule: "经典数独 + 技巧路径解释。",
+        playComboCount: 1,
+        variants: "技巧训练关、错题复盘、导入题目",
+        assistSystems: "分层提示、候选数解释、技巧标签、复盘报告",
+        contentSystem: "技巧题库 + 生成题 + 训练计划",
+        qualityRequirement: "每题需要可解释路径，难度按技巧分层。",
+        diffType: "教学差异",
+        diffDetail: "提示系统解释“为什么”，而不是直接填答案。",
+        notDoing: "不做高频广告打断，不把学习体验做成刷题焦虑。",
+        monetization: "买断 / 订阅 / 去广告",
+        devScore: 4,
+        contentScore: 4.5,
+        opsScore: 3,
+        techKeys: "求解步骤解释器、技巧分类、错题系统、训练计划。",
+        directCompetitors: "Good Sudoku、Cracking The Cryptic 类数独产品",
+        indirectCompetitors: "脑力训练 App、逻辑训练 App",
+        publicData: "高手向数独可用高质量提示、排行榜、导入题等形成差异。",
+        badReviewKeywords: "提示太弱、教学不清楚、题太难、订阅价格敏感。",
+        marketChance: "避开普通数独红海，切入“数独学习工具”。",
+        changeSummary: "从经典数独升级为教学型产品。",
+        changeImpact: "深度和粘性提升，但开发与内容难度明显上升。",
+        validationMetrics: "提示点击后完成率、复盘打开率、技巧训练留存、付费转化。",
+        positioningDamage: "中",
+        fitsMainline: "是，但应作为独立模式",
+        notes: "适合第二阶段，不建议第一版就做满。"
+      },
+      {
+        id: "sudoku_tower_defense_hybrid",
+        name: "数独塔防",
+        version: "hybrid",
+        category: "数独 + 塔防",
+        platform: "Steam / Web / 微信小游戏",
+        status: "创意实验",
+        oneLine: "用解数独获得资源，再布防抵御敌人",
+        emotion: "思考 + 紧张 + 策略",
+        productType: "混合玩法型",
+        audience: "喜欢益智又喜欢策略的玩家",
+        persona: "觉得纯数独太安静，想要一点战斗反馈，但不想变成重操作游戏。",
+        scenario: "电脑前长局 / 微信小游戏挑战",
+        jtbd: "通过解谜产生策略资源，再看到即时反馈。",
+        sessionLength: "8-20 分钟",
+        entryScore: 4,
+        depthScore: 4,
+        stickinessScore: 4,
+        coreRule: "数独填数产生金币/能量/塔位，塔防阶段消耗资源。",
+        playComboCount: 2,
+        variants: "经典数独格 + 路线防守；或每填一区解锁塔位。",
+        assistSystems: "慢速模式、提示、撤销、关卡预览、失败复盘",
+        contentSystem: "关卡制 + 难度曲线 + 防御单位成长",
+        qualityRequirement: "解谜压力不能破坏数独逻辑；塔防不能喧宾夺主。",
+        diffType: "玩法融合",
+        diffDetail: "把“填数正确性”转成塔防资源，让安静数独有外部反馈。",
+        notDoing: "不做重氪养成、不做高频数值压迫。",
+        monetization: "买断 / 激励广告 / 皮肤",
+        devScore: 4.5,
+        contentScore: 4,
+        opsScore: 4,
+        techKeys: "数独生成、战斗模拟、关卡编辑器、平衡性、状态同步。",
+        directCompetitors: "Puzzle + Defense 混合益智、Dungeon Puzzle 类",
+        indirectCompetitors: "塔防、数字益智、Roguelike Puzzle",
+        publicData: "混合玩法容易形成差异，但教育成本和调参成本高。",
+        badReviewKeywords: "规则复杂、两边都不够爽、失败不公平、节奏割裂。",
+        marketChance: "做成小体量 Steam 创意游戏或微信小游戏活动玩法。",
+        changeSummary: "数独主线加入塔防反馈层。",
+        changeImpact: "差异增强，但偏离经典数独；适合作为独立新游戏，不适合直接塞进经典数独。",
+        validationMetrics: "新手教程完成率、首局失败率、二局率、关卡重复游玩率。",
+        positioningDamage: "高",
+        fitsMainline: "否，建议独立立项",
+        notes: "好玩但不轻，不能用经典数独的产品逻辑管理。"
+      },
+      {
+        id: "tower_defense_casual",
+        name: "轻量塔防",
+        version: "v0",
+        category: "塔防",
+        platform: "微信小游戏 / Android",
+        status: "概念验证",
+        oneLine: "3 分钟一局的轻量路线塔防",
+        emotion: "防守成就 + 轻策略",
+        productType: "关卡型 + 运营型",
+        audience: "休闲策略玩家、微信碎片用户",
+        persona: "想动脑但不想学习复杂系统，喜欢升级、合成、过关。",
+        scenario: "排队 / 通勤 / 午休",
+        jtbd: "快速布置、升级、看怪物被消灭。",
+        sessionLength: "3-8 分钟",
+        entryScore: 2,
+        depthScore: 4,
+        stickinessScore: 5,
+        coreRule: "敌人沿路径前进，玩家放置/升级防御塔阻止通关。",
+        playComboCount: 1,
+        variants: "路线塔防、随机塔、合成塔、肉鸽塔防",
+        assistSystems: "自动开始、倍速、推荐升级、失败提示",
+        contentSystem: "关卡、每日挑战、塔升级、活动",
+        qualityRequirement: "关卡节奏明确，失败原因可理解。",
+        diffType: "节奏差异",
+        diffDetail: "压缩成 3 分钟一局，适合微信小游戏和移动端。",
+        notDoing: "不做复杂剧情，不做长线重肝系统。",
+        monetization: "激励广告 + 皮肤 + 小额 IAP",
+        devScore: 3.5,
+        contentScore: 4,
+        opsScore: 4.5,
+        techKeys: "寻路、波次编辑器、塔/怪数值、关卡数据表。",
+        directCompetitors: "Kingdom Rush 类、随机塔防小游戏",
+        indirectCompetitors: "合成、放置、肉鸽小游戏",
+        publicData: "塔防适合关卡运营和激励广告，但数值调优要求较高。",
+        badReviewKeywords: "卡关逼广告、数值失衡、重复刷、后期无聊。",
+        marketChance: "做轻量节奏和清楚反馈，减少养成负担。",
+        changeSummary: "塔防基础方案。",
+        changeImpact: "作为塔防基准。",
+        validationMetrics: "关卡通过率、失败后复玩率、激励广告观看率、D3 留存。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "适合微信小游戏测试。"
+      },
+      {
+        id: "card_roguelike_puzzle",
+        name: "轻肉鸽卡牌",
+        version: "v0",
+        category: "卡牌",
+        platform: "Steam / Android",
+        status: "概念验证",
+        oneLine: "10 分钟一局的轻量构筑卡牌",
+        emotion: "策略组合 + 发现感",
+        productType: "策略型 + 内容型",
+        audience: "喜欢 Slay the Spire 式构筑但想要更轻体验的人",
+        persona: "愿意研究卡组组合，但不想每局玩 40 分钟。",
+        scenario: "PC 晚间 / 手机长碎片时间",
+        jtbd: "通过选择和组合卡牌，打出一套自己的策略。",
+        sessionLength: "10-25 分钟",
+        entryScore: 4,
+        depthScore: 5,
+        stickinessScore: 5,
+        coreRule: "每回合抽牌，使用资源打牌，战胜敌人后构筑牌组。",
+        playComboCount: 2,
+        variants: "卡牌战斗 + 路线选择 + 遗物组合",
+        assistSystems: "关键词说明、推荐出牌、新手卡组、撤销预览",
+        contentSystem: "卡牌池、敌人、事件、遗物、角色",
+        qualityRequirement: "卡牌互相联动，避免无脑最优解。",
+        diffType: "构筑深度",
+        diffDetail: "降低单局时长，强调小卡组快速成型。",
+        notDoing: "不做抽卡氪金，不做 PVP 平衡地狱。",
+        monetization: "Steam 买断 / 移动端买断或广告试玩",
+        devScore: 4,
+        contentScore: 5,
+        opsScore: 3.5,
+        techKeys: "战斗状态机、卡牌 DSL、敌人 AI、平衡测试、存档。",
+        directCompetitors: "Slay the Spire、Dawncaster、Pirates Outlaws",
+        indirectCompetitors: "棋盘策略、回合制 RPG、肉鸽解谜",
+        publicData: "卡牌构筑天花板高，但内容和平衡成本高。",
+        badReviewKeywords: "卡牌少、套路单一、随机不公平、后期重复。",
+        marketChance: "做更短单局、更清晰反馈、更低学习成本。",
+        changeSummary: "卡牌大类基准。",
+        changeImpact: "适合中长期项目，不适合作为极低成本首作。",
+        validationMetrics: "首局完成率、平均局长、卡牌选择分布、胜率曲线、复玩率。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "需要大量平衡和内容迭代。"
+      },
+      {
+        id: "match3_casual",
+        name: "消消乐",
+        version: "v0",
+        category: "消消乐",
+        platform: "微信小游戏 / iOS / Android",
+        status: "成熟品类",
+        oneLine: "轻松上手、关卡驱动的三消游戏",
+        emotion: "爽感 + 轻松 + 收集",
+        productType: "关卡型 + 运营型",
+        audience: "泛休闲用户、女性用户、中老年用户、碎片时间玩家",
+        persona: "打开就能玩，喜欢颜色反馈、连锁爆炸和过关奖励。",
+        scenario: "等车 / 看剧间隙 / 睡前",
+        jtbd: "不用学习太多规则，快速获得消除爽感和过关反馈。",
+        sessionLength: "1-5 分钟",
+        entryScore: 1,
+        depthScore: 3,
+        stickinessScore: 5,
+        coreRule: "交换相邻元素，三个及以上相同元素连线消除。",
+        playComboCount: 1,
+        variants: "关卡目标、障碍物、道具、限步、收集、剧情装修",
+        assistSystems: "可行动提示、道具、复活、自动洗牌",
+        contentSystem: "大量关卡、活动、赛季、道具经济",
+        qualityRequirement: "关卡目标清楚，爽点密度高，难点可调。",
+        diffType: "运营与主题",
+        diffDetail: "品类极成熟，差异通常来自主题包装、关卡节奏和活动运营。",
+        notDoing: "不直接硬拼海量关卡，不做过强付费墙。",
+        monetization: "广告 + 道具 IAP + 体力",
+        devScore: 3,
+        contentScore: 5,
+        opsScore: 5,
+        techKeys: "棋盘消除逻辑、关卡编辑器、道具系统、活动系统。",
+        directCompetitors: "Candy Crush、开心消消乐、Royal Match",
+        indirectCompetitors: "连连看、泡泡龙、合成类",
+        publicData: "三消是超成熟大盘，核心竞争在内容量和运营。",
+        badReviewKeywords: "卡关、逼氪、广告多、关卡重复、运气成分。",
+        marketChance: "小团队更适合做垂直主题或轻量创新，不适合正面硬拼。",
+        changeSummary: "消除大类基准。",
+        changeImpact: "极易上手，粘性强，但内容和运营压力最大。",
+        validationMetrics: "关卡失败率、道具使用率、卡关点、D7 留存、付费率。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "不建议无差异进入红海。"
+      },
+      {
+        id: "link_match_classic",
+        name: "连连看",
+        version: "v0",
+        category: "连连看",
+        platform: "微信小游戏 / Web / Android",
+        status: "轻量方案",
+        oneLine: "低压、怀旧、适合碎片时间的图案连接游戏",
+        emotion: "怀旧 + 放松 + 清屏爽感",
+        productType: "工具型 + 关卡型",
+        audience: "轻度休闲玩家、中年用户、办公室碎片用户",
+        persona: "喜欢简单规则，不喜欢复杂成长系统，追求清屏和时间挑战。",
+        scenario: "午休 / 办公间隙 / 休闲网页",
+        jtbd: "快速找相同图案，清空棋盘。",
+        sessionLength: "2-6 分钟",
+        entryScore: 1,
+        depthScore: 2.5,
+        stickinessScore: 3.5,
+        coreRule: "两个相同图案之间连线转折不超过两次即可消除。",
+        playComboCount: 1,
+        variants: "限时、无限、主题图案、道具、关卡障碍",
+        assistSystems: "提示、洗牌、撤销、剩余可消除检测",
+        contentSystem: "主题图包 + 关卡 + 每日挑战",
+        qualityRequirement: "始终有解或可洗牌；图案识别清楚。",
+        diffType: "轻量体验",
+        diffDetail: "做成打开即玩、字体大、图案清晰、低负担。",
+        notDoing: "不做复杂数值养成，不做重广告。",
+        monetization: "广告 + 皮肤主题",
+        devScore: 2,
+        contentScore: 2.5,
+        opsScore: 2.5,
+        techKeys: "连线判定、可解性检测、棋盘生成、主题资源。",
+        directCompetitors: "各类 Onet / 连连看小游戏",
+        indirectCompetitors: "消消乐、找茬、记忆翻牌",
+        publicData: "连连看规则成熟，适合轻量入口和怀旧用户。",
+        badReviewKeywords: "图案太小、广告太多、死局、误触。",
+        marketChance: "做清晰图案和舒适操作，适配中老年和微信入口。",
+        changeSummary: "连连看大类基准。",
+        changeImpact: "开发轻、上手低，但差异和深度不足。",
+        validationMetrics: "首局完成率、误触率、平均局长、提示使用率。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "可作为低成本练手项目。"
+      },
+      {
+        id: "snake_modern",
+        name: "现代贪吃蛇",
+        version: "v0",
+        category: "贪吃蛇",
+        platform: "Web / 微信小游戏 / Steam",
+        status: "创意小品",
+        oneLine: "经典贪吃蛇加入任务、皮肤和轻度肉鸽变化",
+        emotion: "紧张 + 成长 + 怀旧",
+        productType: "街机型 + 轻肉鸽",
+        audience: "怀旧玩家、短局街机玩家、小游戏用户",
+        persona: "知道贪吃蛇规则，想玩一点更现代、更有目标的版本。",
+        scenario: "网页短局 / 微信挑战 / Steam 小品",
+        jtbd: "在简单控制里追求更高分和更长生存。",
+        sessionLength: "1-8 分钟",
+        entryScore: 1,
+        depthScore: 3.5,
+        stickinessScore: 3.5,
+        coreRule: "控制蛇吃食物变长，避免撞墙、撞自己或障碍。",
+        playComboCount: 1,
+        variants: "任务目标、道具、障碍、Boss、肉鸽升级、多人竞速",
+        assistSystems: "新手慢速、轨迹提示、暂停、复活",
+        contentSystem: "地图、任务、皮肤、每日挑战",
+        qualityRequirement: "控制响应必须准确，死亡原因必须公平。",
+        diffType: "经典现代化",
+        diffDetail: "加入目标和变化，但不能破坏贪吃蛇一秒懂的优势。",
+        notDoing: "不做复杂技能堆叠，不让画面过乱。",
+        monetization: "广告 + 皮肤 / Steam 买断",
+        devScore: 2.5,
+        contentScore: 3,
+        opsScore: 3,
+        techKeys: "网格移动、碰撞、道具系统、地图生成、排行榜。",
+        directCompetitors: "Snake.io、各类贪吃蛇小游戏",
+        indirectCompetitors: "2048、Flappy Bird、街机小游戏",
+        publicData: "经典规则认知成本极低，差异要靠节奏、反馈和排行榜。",
+        badReviewKeywords: "广告多、延迟、判定不准、AI 不公平。",
+        marketChance: "做精准控制和清爽视觉，加入轻目标驱动。",
+        changeSummary: "贪吃蛇大类基准。",
+        changeImpact: "适合独立开发低成本验证。",
+        validationMetrics: "首局死亡时间、再来一局率、排行榜参与率、控制误触反馈。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "非常适合做 Web Demo。"
+      },
+      {
+        id: "tetris_classic_plus",
+        name: "俄罗斯方块 Plus",
+        version: "v0",
+        category: "俄罗斯方块",
+        platform: "Web / Steam / Android",
+        status: "规则敏感",
+        oneLine: "经典方块堆叠的现代化练习与挑战版",
+        emotion: "心流 + 压力 + 技巧成长",
+        productType: "街机型 + 技巧训练",
+        audience: "反应型玩家、经典街机玩家、技巧训练玩家",
+        persona: "喜欢高速心流和不断突破分数，对操作延迟很敏感。",
+        scenario: "PC 长局 / 手机短局 / Web 练习",
+        jtbd: "在高速压力下保持清晰操作，追求更高分。",
+        sessionLength: "3-15 分钟",
+        entryScore: 2,
+        depthScore: 5,
+        stickinessScore: 4,
+        coreRule: "不同形状方块下落，旋转、移动、消行得分。",
+        playComboCount: 1,
+        variants: "马拉松、限时、挑战关、训练模式、特殊方块",
+        assistSystems: "幽灵方块、保留方块、下一个预览、训练复盘",
+        contentSystem: "模式、排行榜、成就、训练任务",
+        qualityRequirement: "输入延迟低，旋转规则清晰，判定公平。",
+        diffType: "技巧体验",
+        diffDetail: "突出训练、复盘和低延迟手感，而不是乱加道具。",
+        notDoing: "避免直接使用受保护品牌表达；不复制商业方块产品包装。",
+        monetization: "买断 / 广告 + 皮肤",
+        devScore: 3,
+        contentScore: 2.5,
+        opsScore: 3,
+        techKeys: "旋转系统、碰撞、输入缓冲、排行榜、回放。",
+        directCompetitors: "Tetris 官方类产品、Puyo Puyo Tetris 类",
+        indirectCompetitors: "节奏游戏、街机反应游戏、堆叠游戏",
+        publicData: "核心规则认知高，但品牌与规则表达要谨慎。",
+        badReviewKeywords: "延迟、旋转手感差、广告打断、判定不一致。",
+        marketChance: "做训练工具或变体玩法，而不是直接硬刚官方产品。",
+        changeSummary: "俄罗斯方块大类基准。",
+        changeImpact: "高心流高深度，但手感和版权边界要注意。",
+        validationMetrics: "输入延迟反馈、平均局长、再开局率、高分增长曲线。",
+        positioningDamage: "低",
+        fitsMainline: "是",
+        notes: "命名和素材要避开官方商标。"
+      },
+      {
+        id: "number_match_casual",
+        name: "数字配对",
+        version: "v0",
+        category: "数字益智",
+        platform: "iOS / Android / 微信小游戏",
+        status: "机会观察",
+        oneLine: "比数独更轻的数字消除脑力游戏",
+        emotion: "轻脑力 + 清理爽感",
+        productType: "工具型 + 关卡型",
+        audience: "喜欢数字但觉得数独太难的用户",
+        persona: "想玩数字游戏，但不想做复杂推理。",
+        scenario: "通勤 / 睡前 / 休息",
+        jtbd: "通过简单规则清理数字棋盘。",
+        sessionLength: "2-8 分钟",
+        entryScore: 2,
+        depthScore: 3,
+        stickinessScore: 4,
+        coreRule: "寻找相同数字或合计为特定值的数字对并消除。",
+        playComboCount: 1,
+        variants: "限步、限时、关卡目标、每日挑战",
+        assistSystems: "提示、撤销、洗牌、可消除高亮",
+        contentSystem: "关卡 + 每日挑战 + 主题",
+        qualityRequirement: "始终有可行动作，避免无意义扫描。",
+        diffType: "人群差异",
+        diffDetail: "承接数独用户，但更轻、更快、更像休闲消除。",
+        notDoing: "不做复杂公式，不做强推理。",
+        monetization: "广告 + 去广告 + 道具",
+        devScore: 2.5,
+        contentScore: 3.5,
+        opsScore: 3,
+        techKeys: "棋盘生成、可解性检测、关卡目标、提示算法。",
+        directCompetitors: "Number Match、数字消除类游戏",
+        indirectCompetitors: "数独、2048、连连看、消消乐",
+        publicData: "数字益智常被包装成放松和脑力训练。",
+        badReviewKeywords: "广告、重复、提示弱、后期乏味。",
+        marketChance: "作为数独产品的轻量旁支，吸收更广泛用户。",
+        changeSummary: "从数独向更轻数字消除扩展。",
+        changeImpact: "降低入门，提高泛用户覆盖，但推理深度下降。",
+        validationMetrics: "首局完成率、D1 留存、广告退出率、日挑战完成率。",
+        positioningDamage: "中",
+        fitsMainline: "待验证",
+        notes: "适合作为矩阵里的相邻品类参考。"
+      }
+    ];
+
+    const FIELD_CONFIG = [
+      ["name", "名称", "text", true],
+      ["version", "版本", "text", false],
+      ["category", "大分类", "text", true],
+      ["platform", "平台", "text", true],
+      ["status", "状态", "text", false],
+      ["oneLine", "一句话定位", "textarea", true],
+      ["emotion", "核心情绪", "text", false],
+      ["productType", "产品类型", "text", false],
+      ["audience", "面向人群", "textarea", false],
+      ["persona", "核心画像", "textarea", false],
+      ["scenario", "用户场景", "text", false],
+      ["jtbd", "用户任务 JTBD", "textarea", false],
+      ["sessionLength", "单局时长", "text", false],
+      ["entryScore", "入门门槛 1-5", "number", false],
+      ["depthScore", "深度上限 1-5", "number", false],
+      ["stickinessScore", "用户粘性 1-5", "number", false],
+      ["coreRule", "核心规则", "textarea", false],
+      ["playComboCount", "玩法组合数", "number", false],
+      ["variants", "玩法变体", "textarea", false],
+      ["assistSystems", "辅助系统", "textarea", false],
+      ["contentSystem", "内容系统", "textarea", false],
+      ["qualityRequirement", "题目/内容质量要求", "textarea", false],
+      ["diffType", "差异点类型", "text", false],
+      ["diffDetail", "具体差异点", "textarea", false],
+      ["notDoing", "不做什么", "textarea", false],
+      ["monetization", "商业模式", "text", false],
+      ["devScore", "开发难度 1-5", "number", false],
+      ["contentScore", "内容难度 1-5", "number", false],
+      ["opsScore", "运营难度 1-5", "number", false],
+      ["techKeys", "技术关键点", "textarea", false],
+      ["directCompetitors", "直接竞品", "textarea", false],
+      ["indirectCompetitors", "间接竞品", "textarea", false],
+      ["publicData", "竞品公开数据 / 市场证据", "textarea", false],
+      ["badReviewKeywords", "竞品差评关键词", "textarea", false],
+      ["marketChance", "市场机会", "textarea", false],
+      ["changeSummary", "本次变更", "textarea", false],
+      ["changeImpact", "影响判断", "textarea", false],
+      ["validationMetrics", "验证指标", "textarea", false],
+      ["positioningDamage", "原定位伤害", "text", false],
+      ["fitsMainline", "是否符合主线", "text", false],
+      ["notes", "备注", "textarea", false],
+    ];
+
+    let rows = [];
+    let selectedId = null;
+    let checkedIds = new Set();
+    let currentJsonMode = "export";
+
+    const $ = (id) => document.getElementById(id);
+
+    function uid(prefix = "row") {
+      return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        rows = raw ? JSON.parse(raw) : structuredClone(DEFAULT_DATA);
+      } catch (e) {
+        rows = structuredClone(DEFAULT_DATA);
+        $("storageStatus").textContent = "localStorage 读取失败，使用 DEMO";
+        $("storageStatus").className = "pill hot";
+      }
+      saveData(false);
+    }
+
+    function saveData(render = true) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rows));
+        $("storageStatus").textContent = "localStorage 已自动保存";
+        $("storageStatus").className = "pill good";
+      } catch (e) {
+        $("storageStatus").textContent = "localStorage 保存失败";
+        $("storageStatus").className = "pill hot";
+      }
+      if (render) renderAll();
+    }
+
+    function uniqueValues(key) {
+      return [...new Set(rows.flatMap(r => String(r[key] || "").split("/").map(x => x.trim())).filter(Boolean))].sort();
+    }
+
+    function populateFilters() {
+      const platform = $("platformFilter");
+      const category = $("categoryFilter");
+      const type = $("typeFilter");
+      const current = [platform.value, category.value, type.value];
+
+      platform.innerHTML = '<option value="">全部平台</option>' + uniqueValues("platform").map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      category.innerHTML = '<option value="">全部分类</option>' + uniqueValues("category").map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+      type.innerHTML = '<option value="">全部类型</option>' + uniqueValues("productType").map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join("");
+
+      platform.value = current[0] || "";
+      category.value = current[1] || "";
+      type.value = current[2] || "";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function short(value, len = 48) {
+      const s = String(value ?? "");
+      return s.length > len ? s.slice(0, len) + "…" : s;
+    }
+
+    function scoreBar(value) {
+      const n = Number(value || 0);
+      const pct = Math.max(0, Math.min(100, n / 5 * 100));
+      return `<div class="score"><span>${Number.isInteger(n) ? n : n.toFixed(1)}</span><div class="bar"><i style="width:${pct}%"></i></div></div>`;
+    }
+
+    function getFilteredRows() {
+      const q = $("searchInput").value.trim().toLowerCase();
+      const pf = $("platformFilter").value;
+      const cf = $("categoryFilter").value;
+      const tf = $("typeFilter").value;
+
+      return rows.filter(r => {
+        const hay = Object.values(r).join(" ").toLowerCase();
+        const passQ = !q || hay.includes(q);
+        const passP = !pf || String(r.platform || "").includes(pf);
+        const passC = !cf || String(r.category || "").includes(cf);
+        const passT = !tf || String(r.productType || "").includes(tf);
+        return passQ && passP && passC && passT;
+      });
+    }
+
+    function renderTable() {
+      const data = getFilteredRows();
+      const body = $("matrixBody");
+      if (!data.length) {
+        body.innerHTML = `<tr><td colspan="21" class="empty">没有匹配数据。可以清空筛选，或新增一行。</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = data.map(r => `
+        <tr data-id="${escapeHtml(r.id)}" class="${r.id === selectedId ? "selected" : ""}">
+          <td class="sticky-col name-cell">
+            <strong>${escapeHtml(r.name)}</strong>
+            <small>${escapeHtml(r.oneLine)}</small>
+          </td>
+          <td onclick="event.stopPropagation()">
+            <input type="checkbox" data-check="${escapeHtml(r.id)}" ${checkedIds.has(r.id) ? "checked" : ""} />
+          </td>
+          <td><span class="pill blue">${escapeHtml(r.category)}</span></td>
+          <td>${escapeHtml(short(r.platform, 34))}</td>
+          <td><span class="pill purple">${escapeHtml(r.status)}</span></td>
+          <td>${escapeHtml(short(r.audience, 62))}</td>
+          <td>${escapeHtml(r.scenario)}</td>
+          <td>${escapeHtml(r.sessionLength)}</td>
+          <td>${scoreBar(r.entryScore)}</td>
+          <td>${scoreBar(r.depthScore)}</td>
+          <td>${scoreBar(r.stickinessScore)}</td>
+          <td>${escapeHtml(r.playComboCount)}</td>
+          <td>${escapeHtml(short(r.diffDetail, 70))}</td>
+          <td>${escapeHtml(r.monetization)}</td>
+          <td>${scoreBar(r.devScore)}</td>
+          <td>${scoreBar(r.contentScore)}</td>
+          <td>${scoreBar(r.opsScore)}</td>
+          <td>${escapeHtml(short(r.directCompetitors, 56))}</td>
+          <td>${escapeHtml(short(r.marketChance, 70))}</td>
+          <td>${escapeHtml(short(r.changeImpact, 70))}</td>
+          <td onclick="event.stopPropagation()">
+            <button class="small" data-action="edit" data-id="${escapeHtml(r.id)}">编辑</button>
+            <button class="small" data-action="clone" data-id="${escapeHtml(r.id)}">复制</button>
+          </td>
+        </tr>
+      `).join("");
+
+      body.querySelectorAll("tr[data-id]").forEach(tr => {
+        tr.addEventListener("click", () => openDrawer(tr.dataset.id));
+      });
+      body.querySelectorAll("input[data-check]").forEach(cb => {
+        cb.addEventListener("change", (e) => {
+          const id = e.target.dataset.check;
+          if (e.target.checked) {
+            if (checkedIds.size >= 2 && !checkedIds.has(id)) {
+              const first = checkedIds.values().next().value;
+              checkedIds.delete(first);
+            }
+            checkedIds.add(id);
+          } else {
+            checkedIds.delete(id);
+          }
+          renderTable();
+        });
+      });
+      body.querySelectorAll("button[data-action]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (btn.dataset.action === "edit") openDrawer(btn.dataset.id);
+          if (btn.dataset.action === "clone") cloneRow(btn.dataset.id);
+        });
+      });
+    }
+
+    function renderStats() {
+      const data = getFilteredRows();
+      const avg = (key) => data.length ? (data.reduce((s, r) => s + Number(r[key] || 0), 0) / data.length).toFixed(1) : "0";
+      $("totalCount").textContent = data.length;
+      $("avgDev").textContent = avg("devScore");
+      $("avgStick").textContent = avg("stickinessScore");
+      $("changedCount").textContent = data.filter(r => r.changeSummary && r.changeSummary !== "基础方案").length;
+    }
+
+    function renderAll() {
+      populateFilters();
+      renderStats();
+      renderTable();
+    }
+
+    function openDrawer(id) {
+      selectedId = id;
+      const row = rows.find(r => r.id === id);
+      if (!row) return;
+      $("drawerTitle").textContent = `编辑：${row.name}`;
+      $("drawer").classList.add("open");
+      buildForm(row);
+      renderTable();
+    }
+
+    function closeDrawer() {
+      $("drawer").classList.remove("open");
+      selectedId = null;
+      renderTable();
+    }
+
+    function buildForm(row) {
+      const form = $("editForm");
+      form.innerHTML = `
+        <div class="field">
+          <label>ID</label>
+          <input value="${escapeHtml(row.id)}" disabled />
+        </div>
+        <div class="form-grid">
+          ${FIELD_CONFIG.map(([key, label, type, wide]) => fieldHtml(row, key, label, type, wide)).join("")}
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
+          <button type="button" id="saveFormBtn" class="primary">保存</button>
+        </div>
+      `;
+      $("saveFormBtn").addEventListener("click", saveForm);
+    }
+
+    function fieldHtml(row, key, label, type, wide) {
+      const value = row[key] ?? "";
+      if (type === "textarea") {
+        return `<div class="field ${wide ? "wide" : ""}">
+          <label>${escapeHtml(label)}</label>
+          <textarea name="${escapeHtml(key)}">${escapeHtml(value)}</textarea>
+        </div>`;
+      }
+      if (type === "number") {
+        return `<div class="field ${wide ? "wide" : ""}">
+          <label>${escapeHtml(label)}</label>
+          <input type="number" min="0" max="5" step="0.5" name="${escapeHtml(key)}" value="${escapeHtml(value)}" />
+        </div>`;
+      }
+      return `<div class="field ${wide ? "wide" : ""}">
+        <label>${escapeHtml(label)}</label>
+        <input name="${escapeHtml(key)}" value="${escapeHtml(value)}" />
+      </div>`;
+    }
+
+    function saveForm() {
+      const row = rows.find(r => r.id === selectedId);
+      if (!row) return;
+      const form = $("editForm");
+      FIELD_CONFIG.forEach(([key, label, type]) => {
+        const el = form.elements[key];
+        if (!el) return;
+        row[key] = type === "number" ? Number(el.value || 0) : el.value.trim();
+      });
+      saveData();
+      openDrawer(row.id);
+    }
+
+    function addRow() {
+      const base = {
+        id: uid("game"),
+        name: "新游戏方案",
+        version: "v0",
+        category: "未分类",
+        platform: "Web",
+        status: "草稿",
+        oneLine: "一句话说明这款游戏的核心定位",
+        emotion: "放松 / 成就 / 挑战",
+        productType: "工具型 / 内容型 / 关卡型",
+        audience: "目标用户",
+        persona: "核心用户画像",
+        scenario: "用户场景",
+        jtbd: "用户打开它是为了完成什么任务",
+        sessionLength: "3-10 分钟",
+        entryScore: 2,
+        depthScore: 3,
+        stickinessScore: 3,
+        coreRule: "核心规则",
+        playComboCount: 1,
+        variants: "玩法变体",
+        assistSystems: "辅助系统",
+        contentSystem: "内容系统",
+        qualityRequirement: "质量要求",
+        diffType: "差异点类型",
+        diffDetail: "具体差异点",
+        notDoing: "不做什么",
+        monetization: "待定",
+        devScore: 2,
+        contentScore: 2,
+        opsScore: 2,
+        techKeys: "技术关键点",
+        directCompetitors: "直接竞品",
+        indirectCompetitors: "间接竞品",
+        publicData: "市场证据",
+        badReviewKeywords: "差评关键词",
+        marketChance: "市场机会",
+        changeSummary: "新建方案",
+        changeImpact: "待评估",
+        validationMetrics: "D1 留存、完成率、复玩率",
+        positioningDamage: "待评估",
+        fitsMainline: "待验证",
+        notes: ""
+      };
+      rows.unshift(base);
+      saveData();
+      openDrawer(base.id);
+    }
+
+    function cloneRow(id) {
+      const row = rows.find(r => r.id === id);
+      if (!row) return;
+      const clone = structuredClone(row);
+      clone.id = uid(row.category || "clone");
+      clone.name = row.name + " - 微调版";
+      clone.version = "copy";
+      clone.status = "微调方案";
+      clone.changeSummary = "从“" + row.name + "”复制后微调";
+      clone.changeImpact = "请填写：这次微调对人群、难度、粘性、开发复杂度的影响。";
+      rows.unshift(clone);
+      saveData();
+      openDrawer(clone.id);
+    }
+
+    function deleteSelectedRow() {
+      if (!selectedId) return;
+      const row = rows.find(r => r.id === selectedId);
+      if (!row) return;
+      if (!confirm(`确定删除「${row.name}」吗？`)) return;
+      rows = rows.filter(r => r.id !== selectedId);
+      checkedIds.delete(selectedId);
+      closeDrawer();
+      saveData();
+    }
+
+    function compareRows() {
+      const ids = [...checkedIds];
+      if (ids.length !== 2) {
+        alert("请先勾选两行再对比。");
+        return;
+      }
+      const a = rows.find(r => r.id === ids[0]);
+      const b = rows.find(r => r.id === ids[1]);
+      if (!a || !b) return;
+
+      const important = [
+        ["name", "名称"],
+        ["oneLine", "一句话定位"],
+        ["category", "大分类"],
+        ["platform", "平台"],
+        ["audience", "核心用户"],
+        ["scenario", "用户场景"],
+        ["jtbd", "用户任务"],
+        ["entryScore", "入门门槛"],
+        ["depthScore", "深度上限"],
+        ["stickinessScore", "用户粘性"],
+        ["playComboCount", "玩法组合数"],
+        ["variants", "玩法变体"],
+        ["diffDetail", "具体差异点"],
+        ["monetization", "商业模式"],
+        ["devScore", "开发难度"],
+        ["contentScore", "内容难度"],
+        ["opsScore", "运营难度"],
+        ["marketChance", "市场机会"],
+        ["changeSummary", "本次变更"],
+        ["changeImpact", "影响判断"],
+        ["positioningDamage", "原定位伤害"],
+        ["fitsMainline", "是否符合主线"],
+        ["validationMetrics", "验证指标"]
+      ];
+
+      $("compareContent").innerHTML = `
+        <div class="pill blue">${escapeHtml(a.name)}</div>
+        <span style="color:var(--muted); margin:0 8px;">vs</span>
+        <div class="pill purple">${escapeHtml(b.name)}</div>
+        <div class="compare-grid">
+          <div><strong>字段</strong></div><div><strong>${escapeHtml(a.name)}</strong></div><div><strong>${escapeHtml(b.name)}</strong></div>
+          ${important.map(([key, label]) => {
+            const av = String(a[key] ?? "");
+            const bv = String(b[key] ?? "");
+            const cls = av !== bv ? "changed" : "";
+            return `<div>${escapeHtml(label)}</div><div class="${cls}">${escapeHtml(av)}</div><div class="${cls}">${escapeHtml(bv)}</div>`;
+          }).join("")}
+        </div>
+      `;
+      $("comparePanel").classList.add("show");
+      $("comparePanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function openJson(mode) {
+      currentJsonMode = mode;
+      $("jsonModal").classList.add("show");
+      $("jsonTitle").textContent = mode === "export" ? "导出 JSON" : "导入 JSON";
+      $("jsonText").value = mode === "export" ? JSON.stringify(rows, null, 2) : "";
+      $("applyJsonBtn").style.display = mode === "import" ? "inline-block" : "none";
+    }
+
+    function closeJson() {
+      $("jsonModal").classList.remove("show");
+    }
+
+    function copyJson() {
+      navigator.clipboard.writeText($("jsonText").value).then(() => {
+        $("copyJsonBtn").textContent = "已复制";
+        setTimeout(() => $("copyJsonBtn").textContent = "复制", 1200);
+      });
+    }
+
+    function applyJson() {
+      try {
+        const parsed = JSON.parse($("jsonText").value);
+        if (!Array.isArray(parsed)) throw new Error("JSON 顶层必须是数组");
+        rows = parsed.map(r => ({ id: r.id || uid("import"), ...r }));
+        checkedIds.clear();
+        selectedId = null;
+        saveData();
+        closeJson();
+      } catch (e) {
+        alert("导入失败：" + e.message);
+      }
+    }
+
+    function resetDemo() {
+      if (!confirm("确定恢复 DEMO 数据吗？当前 localStorage 数据会被覆盖。")) return;
+      rows = structuredClone(DEFAULT_DATA);
+      checkedIds.clear();
+      selectedId = null;
+      saveData();
+      closeDrawer();
+      $("comparePanel").classList.remove("show");
+    }
+
+    function wireEvents() {
+      ["searchInput", "platformFilter", "categoryFilter", "typeFilter"].forEach(id => {
+        $(id).addEventListener("input", renderAll);
+        $(id).addEventListener("change", renderAll);
+      });
+      $("addBtn").addEventListener("click", addRow);
+      $("compareBtn").addEventListener("click", compareRows);
+      $("closeCompareBtn").addEventListener("click", () => $("comparePanel").classList.remove("show"));
+      $("closeDrawerBtn").addEventListener("click", closeDrawer);
+      $("duplicateBtn").addEventListener("click", () => selectedId && cloneRow(selectedId));
+      $("deleteBtn").addEventListener("click", deleteSelectedRow);
+      $("exportBtn").addEventListener("click", () => openJson("export"));
+      $("importBtn").addEventListener("click", () => openJson("import"));
+      $("closeJsonBtn").addEventListener("click", closeJson);
+      $("copyJsonBtn").addEventListener("click", copyJson);
+      $("applyJsonBtn").addEventListener("click", applyJson);
+      $("resetBtn").addEventListener("click", resetDemo);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeJson();
+          closeDrawer();
+        }
+      });
+    }
+
+    loadData();
+    wireEvents();
+    renderAll();
+  </script>
+</body>
+</html>

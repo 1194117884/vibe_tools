@@ -1,0 +1,26 @@
+<h2>Sidebar Toggle — Which collapse style?</h2>
+<p class="subtitle">When the sidebar is collapsed (hidden to the left), how should the page look and feel? Click to select.</p>
+
+<div class="options">
+  <div class="option" data-choice="icon-only" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Icon-only rail (Recommended)</h3>
+      <p>Collapsed sidebar shrinks to a narrow icon strip (~56px). Icons remain visible for quick navigation. Hover or click toggle to expand back to full width. Content area gets more space.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="full-hide" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Full hide</h3>
+      <p>Sidebar completely slides off-screen to the left. A small floating toggle button stays visible to bring it back. Maximum content space when collapsed.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="overlay" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Overlay on hover</h3>
+      <p>Sidebar collapses to a thin edge (~4px). Hovering over the edge expands the sidebar as an overlay on top of content (no layout shift). Click toggle to lock it open.</p>
+    </div>
+  </div>
+</div>
