@@ -37,8 +37,6 @@ export class LazyVimEngine {
     this.actionLog = [];
     this.yankRegister = '';      // yanked text
     this.undoStack = [];
-    this.clipboard = '';         // for insert mode text
-    this.insertCol = 0;          // column where insert mode was entered
   }
 
   /**
@@ -305,17 +303,17 @@ export class LazyVimEngine {
   moveWordEnd() {
     const line = this.buffer[this.cursor.row];
     let col = this.cursor.col;
-    // Skip current word
-    while (col < line.length && /\w/.test(line[col])) col++;
-    // Move back one to land on last char of current word, or skip whitespace and find next word end
-    if (col > this.cursor.col && col < line.length && /\s/.test(line[col])) {
+
+    if (/\w/.test(line[col])) {
+      // On a word character: skip to end of this word, then back one
+      while (col < line.length && /\w/.test(line[col])) col++;
       this.cursor.col = col - 1;
     } else {
-      // Skip whitespace
+      // On a non-word character: skip non-word chars, skip whitespace, find next word end
+      while (col < line.length && !/\w/.test(line[col]) && !/\s/.test(line[col])) col++;
       while (col < line.length && /\s/.test(line[col])) col++;
-      // Find end of next word
       while (col < line.length && /\w/.test(line[col])) col++;
-      this.cursor.col = Math.min(col - 1, Math.max(0, line.length - 1));
+      this.cursor.col = Math.max(0, col - 1);
     }
     return this.makeResult('moveWordEnd', 'Moved to word end');
   }
@@ -414,7 +412,6 @@ export class LazyVimEngine {
   enterInsert({ position = 'cursor' } = {}) {
     this.saveUndo();
     this.mode = 'insert';
-    this.insertCol = this.cursor.col;
     switch (position) {
       case 'after':
         if (this.cursor.col < this.buffer[this.cursor.row].length) {
@@ -544,7 +541,7 @@ export class LazyVimEngine {
   }
 
   redo() {
-    return this.makeResult('noop', 'Redo not available in sandbox');
+    return this.makeResult('noop', 'Redo not implemented');
   }
 
   indentLine() {
@@ -627,6 +624,5 @@ export class LazyVimEngine {
     this.actionLog = [];
     this.yankRegister = '';
     this.undoStack = [];
-    this.insertCol = 0;
   }
 }
