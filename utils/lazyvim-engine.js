@@ -32,6 +32,7 @@ export class LazyVimEngine {
     this.visualType = null; // 'char' | 'line' | 'block'
     this.visualAnchor = null; // { row, col } — start of visual selection
     this.keyBuffer = [];
+    this.visualKeyBuffer = [];
     this.keymapMap = new Map();   // key sequence → keymap entry
     this.keyPrefixes = new Set(); // partial key sequences
     this.actionLog = [];
@@ -73,8 +74,11 @@ export class LazyVimEngine {
     this.keyBuffer.push(key);
     const sequence = this.keyBuffer.join('');
 
-    // Exact match
+    // Exact match — but if it's also a prefix, wait for more keys
     if (this.keymapMap.has(sequence)) {
+      if (this.keyPrefixes.has(sequence)) {
+        return { type: 'waiting', sequence };
+      }
       const keymap = this.keymapMap.get(sequence);
       this.keyBuffer = [];
       return this.executeAction(keymap);
@@ -164,9 +168,28 @@ export class LazyVimEngine {
       this.mode = 'normal';
       this.visualType = null;
       this.visualAnchor = null;
+      this.visualKeyBuffer = [];
       return this.makeResult('escapeNormal', 'Return to normal mode');
     }
-    // Movement keys extend selection
+
+    // Accumulate key sequence for multi-key visual commands
+    this.visualKeyBuffer.push(key);
+    const sequence = this.visualKeyBuffer.join('');
+
+    // Check for exact match in keymapMap (e.g., 'gg' in visual mode)
+    if (this.keymapMap.has(sequence)) {
+      const keymap = this.keymapMap.get(sequence);
+      this.visualKeyBuffer = [];
+      return this.executeAction(keymap);
+    }
+
+    // Check for partial match
+    if (this.keyPrefixes.has(sequence)) {
+      return { type: 'waiting', sequence };
+    }
+
+    // Not a prefix — reset buffer and check single-key movement
+    this.visualKeyBuffer = [];
     const movementMap = {
       h: { action: 'moveCursor', args: { direction: 'left' } },
       j: { action: 'moveCursor', args: { direction: 'down' } },
@@ -177,13 +200,12 @@ export class LazyVimEngine {
       '$': { action: 'moveToLineEnd', args: {} },
       '0': { action: 'moveToLineStart', args: {} },
       'G': { action: 'moveToFileEnd', args: {} },
-      'gg': { action: 'moveToFileStart', args: {} },
     };
     const mapping = movementMap[key];
     if (mapping) {
       return this[mapping.action](mapping.args);
     }
-    // Fall through to keymapMap for non-movement keys (e.g., >, < in visual mode)
+    // Fall through to keymapMap for non-movement single keys (e.g., >, <)
     if (this.keymapMap.has(key)) {
       return this.executeAction(this.keymapMap.get(key));
     }
@@ -621,6 +643,7 @@ export class LazyVimEngine {
     this.visualType = null;
     this.visualAnchor = null;
     this.keyBuffer = [];
+    this.visualKeyBuffer = [];
     this.actionLog = [];
     this.yankRegister = '';
     this.undoStack = [];

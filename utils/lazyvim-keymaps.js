@@ -114,8 +114,7 @@ export const keymaps = [
   { id: 'ui-explorer',      keys: '<leader>e',  description: 'Toggle file explorer',                      category: 'ui',     tags: ['explorer', 'toggle', 'files'],       engineAction: 'noop', engineArgs: {} },
   { id: 'ui-theme',         keys: '<leader>th', description: 'Change color theme',                        category: 'ui',     tags: ['theme', 'color', 'style'],           engineAction: 'noop', engineArgs: {} },
   { id: 'ui-bufdelete',     keys: '<leader>bd', description: 'Delete current buffer',                     category: 'ui',     tags: ['buffer', 'delete', 'close'],         engineAction: 'noop', engineArgs: {} },
-  { id: 'ui-lazygit-toggle', keys: '<leader>gg', description: 'Toggle Lazygit UI',                        category: 'ui',     tags: ['lazygit', 'toggle', 'git'],          engineAction: 'noop', engineArgs: {} },
-];
+  ];
 
 /**
  * Filter keymaps by search query (matches id, keys, description, tags).
