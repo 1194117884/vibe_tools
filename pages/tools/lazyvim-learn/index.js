@@ -81,7 +81,6 @@ export default function LazyVimLearn() {
 function ReferenceTab({ keymaps, categories }) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
 
   const filtered = useMemo(() => {
     let result = keymaps;
@@ -140,44 +139,21 @@ function ReferenceTab({ keymaps, categories }) {
         {selectedCategory && ` in ${categories.find((c) => c.id === selectedCategory)?.label || selectedCategory}`}
       </p>
 
-      {/* Keymap list */}
-      <div className="space-y-1">
-        {filtered.map((km) => {
-          const isExpanded = expandedId === km.id;
-          return (
-            <div
-              key={km.id}
-              className="border border-[#d2d2d7] dark:border-[#424245] rounded-lg overflow-hidden transition-colors"
-            >
-              <button
-                onClick={() => setExpandedId(isExpanded ? null : km.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#f5f5f7] dark:hover:bg-[#1d1d1f] transition-colors"
-              >
-                <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#f5f5f7] dark:bg-[#272729] text-[#1d1d1f] dark:text-[#f5f5f7] font-mono text-[14px] font-semibold leading-[1.29] min-w-[48px] justify-center">
-                  {km.keys}
-                </span>
-                <span className="text-[17px] leading-[1.47] text-[#1d1d1f] dark:text-[#f5f5f7] flex-1">
-                  {km.description}
-                </span>
-                <span className="text-[12px] text-[#86868b] uppercase tracking-wide">
-                  {km.category}
-                </span>
-                <svg className={`w-4 h-4 text-[#86868b] transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              {isExpanded && (
-                <div className="px-4 pb-4 border-t border-[#d2d2d7] dark:border-[#424245] pt-3">
-                  <div className="text-[14px] leading-[1.47] text-[#6e6e73]">
-                    <p className="mb-2"><strong className="text-[#1d1d1f] dark:text-[#f5f5f7]">Keys:</strong> <code className="font-mono bg-[#f5f5f7] dark:bg-[#272729] px-1.5 py-0.5 rounded">{km.keys}</code></p>
-                    <p className="mb-2"><strong className="text-[#1d1d1f] dark:text-[#f5f5f7]">Category:</strong> {km.category}</p>
-                    <p><strong className="text-[#1d1d1f] dark:text-[#f5f5f7]">Tags:</strong> {km.tags.join(', ')}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      {/* Keymap cards grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
+        {filtered.map((km) => (
+          <div
+            key={km.id}
+            className="border border-[#d2d2d7] dark:border-[#424245] rounded-lg px-3 py-2.5 hover:border-[#0071e3]/40 hover:shadow-sm transition-colors bg-[#ffffff] dark:bg-[#1d1d1f]"
+          >
+            <span className="block font-mono text-[13px] font-semibold text-[#0071e3] dark:text-[#2997ff] mb-1 truncate">
+              {km.keys}
+            </span>
+            <span className="block text-[12px] leading-[1.33] text-[#6e6e73] line-clamp-2">
+              {km.description}
+            </span>
+          </div>
+        ))}
       </div>
 
       {filtered.length === 0 && (
