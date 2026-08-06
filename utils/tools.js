@@ -71,6 +71,7 @@ export const tools = [
 export const protectedTools = [
   { id: 'upload', name: 'Upload Files', desc: 'Upload files to cloud storage', icon: '⬆️', category: 'private' },
   { id: 'douyin-proxy', name: 'Douyin Proxy', desc: 'Proxy Douyin media downloads', icon: '▶', category: 'private' },
+  { id: 'x-viewer', name: 'Unroll X', desc: 'Read X posts and download media', icon: '𝕏', category: 'private' },
 ];
 
 /**
