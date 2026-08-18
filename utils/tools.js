@@ -62,6 +62,7 @@ export const tools = [
   { id: 'image', name: 'Image Convert', desc: 'HEIC/PNG/JPG/WebP conversion', icon: '🖼', category: 'media' },
   { id: 'icon-resizer', name: 'Icon Resizer', desc: 'Generate iOS / macOS / Android / Web app icons at every size', icon: '📱', category: 'media' },
   { id: 'sprite-slicer', name: 'Sprite Slicer', desc: 'Slice sprite sheets into tiles & remove solid backgrounds', icon: '✂️', category: 'media' },
+  { id: 'bg-remover', name: 'Background Remover', desc: 'Remove solid-color backgrounds from PNG & WebP images', icon: '🎯', category: 'media' },
   { id: 'paste-download', name: 'Paste Download', desc: 'Save clipboard images & files', icon: '📋', category: 'media' },
   { id: 'banner', name: 'Banner Text', desc: 'Generate ASCII art text banners', icon: '🔤', category: 'media' },
 
